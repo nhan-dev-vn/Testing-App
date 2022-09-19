@@ -1,6 +1,6 @@
 const express = require('express')
 const app = express()
-const port = process.env.NODE_ENV === 'production' ? process.env.PORT : 3001;
+const port = process.env.NODE_ENV === 'production' ? process.env.PORT : 3002;
 const path = require('path');
 const cors = require('cors');
 const fs = require('fs');
@@ -15,7 +15,7 @@ app.use(cors({
  }));
 app.use(bodyParser.json({ limit: '50mb' }));
 app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
-app.use(express.static(path.join(__dirname, 'client/build')));
+app.use(express.static(path.join(__dirname, '../client/build')));
 
 const UPLOAD = path.join(__dirname, process.env.UPLOAD);
 module.exports = {
