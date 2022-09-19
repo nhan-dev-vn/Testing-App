@@ -1,12 +1,18 @@
 var mongoose = require('mongoose');
 
 var examTestSchema = new mongoose.Schema({
-  score: Number,
+  score: {
+    total: Number,
+    Listening: Number,
+    Reading: Number,
+    Speaking: Number,
+    Writing: Number
+  },
   exam: {
     type: mongoose.Schema.Types.ObjectId, ref: 'Exam'
   },
   startedAt: Date,
-  finshedAt: Date,
+  finishedAt: Date,
   answers: [{
     question: { type: mongoose.Schema.Types.ObjectId, ref: 'Question' },
     choices: [String],

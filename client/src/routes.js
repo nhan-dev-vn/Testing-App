@@ -65,8 +65,8 @@ const routes = [
   {
     exact: true,
     layout: MainLayout,
-    guard: AuthGuard,
-    path: '/testing/:testId',
+    // guard: AuthGuard,ß
+    path: '/testing',
     component: Testing
   },
 ];

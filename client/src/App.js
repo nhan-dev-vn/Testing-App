@@ -2,6 +2,7 @@ import React, { useEffect } from 'react';
 import { useDispatch } from 'react-redux';
 import './App.css';
 import routes, { renderRoutes } from './routes';
+import axios from './utils/axios';
 import { actions as authActions } from './redux/authSlice';
 
 function App() {
@@ -10,10 +11,8 @@ function App() {
   useEffect(() => {
     (async () => {
       try {
-        const response = await fetch(process.env.apiUrl + '/session-login');
-        const user = await response.json();
-        if (response.status === 200) dispatch(authActions.loginSuccess(user));
-        else throw user;
+        const response = await axios.get('/session-login');
+        dispatch(authActions.loginSuccess(response.data));
       } catch (error) {
         dispatch(authActions.loginFail());
         console.error(JSON.stringify(error));

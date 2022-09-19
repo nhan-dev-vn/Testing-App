@@ -1,24 +1,28 @@
 var mongoose = require('mongoose');
 
+var optionSchema = new mongoose.Schema({
+  html: String,
+  text: String,
+  iamges: [{
+    name: String,
+    url: String
+  }],
+  value: String // true/false
+});
+
 var questionSchema = new mongoose.Schema({
   question: {
     html: String,
     text: String,
+    audioUrl: String,
+    videoUrl: String,
     iamges: [{
       name: String,
       url: String
     }]
   },
   ansType: String, // Multiple Choice/Single Choice/Audio/Text
-  options: [{
-    html: String,
-    text: String,
-    iamges: [{
-      name: String,
-      url: String
-    }],
-    isCorrect: Boolean
-  }],
+  options: [optionSchema],
   score: Number,
   group: {
     type: mongoose.Schema.Types.ObjectId, ref: 'QuestionGroup'

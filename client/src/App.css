@@ -6,13 +6,9 @@
 
 body {
 	background: #f6f5f7;
-	display: flex;
-	justify-content: center;
-	align-items: center;
-	flex-direction: column;
 	font-family: 'Montserrat', sans-serif;
 	height: 100vh;
-	margin: -20px 0 50px;
+	margin: 0px;
 }
 
 h1 {
@@ -68,4 +64,14 @@ button:focus {
 button.ghost {
 	background-color: transparent;
 	border-color: #FFFFFF;
+}
+
+.d-flex {
+	display: flex;
+}
+.font-weight-500 {
+	font-weight: bold;
+}
+.align-items-center {
+	align-items: center;
 }

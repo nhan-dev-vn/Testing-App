@@ -6,6 +6,7 @@ import {
 } from '@mui/material'
 import { actions as authActions } from '../../redux/authSlice'
 import './style.css';
+import axios from '../../utils/axios';
 
 const Component = () => {
 	const navigate = useNavigate();
@@ -35,12 +36,9 @@ const Component = () => {
 	}, []);
 	const handleSignIn = useCallback(async () => {
 		try {
-			const response = await fetch(window.process.env.apiUrl + '/login', { method: 'post', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(login) })
-			const user = await response.json();
-			if (response.status === 200) {
-				dispatch(authActions.loginSuccess(user))
-				navigate('/testing/abc');
-			} else throw Error(JSON.stringify(user))
+			const response = await axios.post('/login', login)
+			dispatch(authActions.loginSuccess(response.data))
+			navigate('/testing');
 		} catch (error) {
 			dispatch(authActions.loginFail())
 			alert("Login failed!")
@@ -48,13 +46,10 @@ const Component = () => {
 	}, [dispatch, login, navigate]);
 	const handleSignUp = useCallback(async () => {
 		try {
-			const response = await fetch(window.process.env.apiUrl + '/register', { method: 'post', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(register) })
-			const user = await response.json();
-			if (response.status === 201) {
-				alert('success');
-				const container = document.getElementById('container');
-				container.classList.remove("right-panel-active");
-			} else throw Error(JSON.stringify(user))
+			const response = await axios.post('/register', register)
+			alert('success');
+			const container = document.getElementById('container');
+			container.classList.remove("right-panel-active");
 		} catch (error) {
 			alert(JSON.stringify(error))
 		}

@@ -13,7 +13,7 @@ module.exports = {
                 error: JSON.stringify(error)
             });
         }
-        
+
     },
     login: async (req, res) => {
         try {
@@ -24,7 +24,7 @@ module.exports = {
                 res.cookie('token', token);
                 req.user = user;
                 res.cookie('user', JSON.stringify({ _id: user._id, email, name: user.name }));
-                res.status(200).send(user);
+                res.status(200).send({ _id: user._id, email, name: user.name });
             } else throw 'Login failed!'
         } catch (error) {
             console.log(JSON.stringify(error))
@@ -33,12 +33,19 @@ module.exports = {
             });
         }
     },
-    sessionLogin: async (req, res, next) => {
-        res.status(200).send({
-            _id: req.user?._id,
-            email: req.user?.email,
-            name: req.user?.name,
-        });
+    sessionLogin: async (req, res) => {
+        try {
+            res.status(200).send({
+                _id: req.user?._id,
+                email: req.user?.email,
+                name: req.user?.name,
+            });
+        } catch (error) {
+            console.log(error);
+            res.status(401).send({
+                error: 'Unauthorized'
+            });
+        }
     },
     checkAuth: async (req, res, next) => {
         try {

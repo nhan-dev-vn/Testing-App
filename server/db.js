@@ -1,9 +1,9 @@
 var mongoose = require('mongoose');
 var gracefulShutdown;
 var dbURI = 'mongodb://localhost/Testing';
-if (process.env.NODE_ENV === 'production') {
-    dbURI = process.env.MONGO_URI;
-}
+// if (process.env.NODE_ENV === 'production') {
+//     dbURI = process.env.MONGO_URI;
+// }
 
 mongoose.connect(dbURI);
 
@@ -47,3 +47,7 @@ process.on('SIGTERM', function() {
 
 // BRING IN YOUR SCHEMAS & MODELS
 require('./models/users');
+require('./models/questions');
+require('./models/questionGroups');
+require('./models/exams');
+require('./models/examTests');
