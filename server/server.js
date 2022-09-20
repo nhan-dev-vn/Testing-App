@@ -1,6 +1,6 @@
 const express = require('express')
 const app = express()
-const port = process.env.NODE_ENV === 'production' ? process.env.PORT : 3002;
+const port = process.env.NODE_ENV === 'production' ? process.env.PORT : 3001;
 const path = require('path');
 const cors = require('cors');
 const fs = require('fs');
@@ -16,6 +16,7 @@ app.use(cors({
 app.use(bodyParser.json({ limit: '50mb' }));
 app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 app.use(express.static(path.join(__dirname, '../client/build')));
+
 
 const UPLOAD = path.join(__dirname, process.env.UPLOAD);
 module.exports = {
@@ -43,6 +44,9 @@ app.post('/api/exam-test/:id/start-testing', ctrlAuth.checkAuth, ctrlExamTest.st
 app.post('/api/exam-test/:id/finish-testing', ctrlAuth.checkAuth, ctrlExamTest.finishTesting);
 app.post('/api/exam-test/:id/update-answer', ctrlAuth.checkAuth, ctrlExamTest.updateAnswer);
 
+app.get('*', (req,res) =>{
+    res.sendFile(path.join(__dirname, '../client/build/index.html'));
+});
 app.listen(port, () => {
     console.log(`Example app listening on port ${port}`)
 });
