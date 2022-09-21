@@ -1,0 +1,24 @@
+#review {
+  width: 100vw;
+  max-width: 1000px;
+  margin: auto;
+  padding: 0 2rem;
+}
+#review-header {
+  padding: 3rem 0;
+  /* display: flex;
+  justify-content: space-between; */
+}
+#review-header h1, #info {
+  text-align: center;
+}
+#score {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+#score span {
+  color: red;
+  font-size: 4rem;
+}

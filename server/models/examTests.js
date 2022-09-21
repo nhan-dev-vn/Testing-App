@@ -16,8 +16,17 @@ var examTestSchema = new mongoose.Schema({
   answers: [{
     question: { type: mongoose.Schema.Types.ObjectId, ref: 'Question' },
     choices: [String],
+    audioUrl: String,
     isCorrect: Boolean,
-    score: Number
+    score: Number,
+    text: {
+      html: String,
+      text: String,
+      iamges: [{
+        name: String,
+        url: String
+      }],
+    }
   }],
   examinee: {
     type: mongoose.Schema.Types.ObjectId, ref: 'User'

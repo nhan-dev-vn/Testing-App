@@ -43,6 +43,10 @@ app.get('/api/exam-test', ctrlAuth.checkAuth, ctrlExamTest.fetchOrCreate);
 app.post('/api/exam-test/:id/start-testing', ctrlAuth.checkAuth, ctrlExamTest.startTesting);
 app.post('/api/exam-test/:id/finish-testing', ctrlAuth.checkAuth, ctrlExamTest.finishTesting);
 app.post('/api/exam-test/:id/update-answer', ctrlAuth.checkAuth, ctrlExamTest.updateAnswer);
+app.get('/api/exam-tests', ctrlAuth.checkAuth, ctrlAuth.checkAuthAdmin, ctrlExamTest.list);
+app.get('/api/exam-tests/:id', ctrlAuth.checkAuth, ctrlAuth.checkAuthAdmin, ctrlExamTest.fetch);
+app.post('/api/upload-audio', ctrlAuth.checkAuth, upload.single('audio'), ctrlExamTest.updateAudioAnswer);
+app.get('/api/exam-test/:examTestId/question/:questionId/filename/:filename/audio-answer', ctrlAuth.checkAuth, ctrlExamTest.getAudioAnswer);
 
 app.get('*', (req,res) =>{
     res.sendFile(path.join(__dirname, '../client/build/index.html'));

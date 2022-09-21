@@ -2,6 +2,9 @@ const mongoose = require('mongoose');
 const ExamTest = require('../models/examTests');
 const Exam = require('../models/exams');
 const { areSameIds } = require('../utils');
+const { UPLOAD, server } = require('../server');
+const fs = require('fs');
+const path = require('path');
 const ObjectId = mongoose.Types.ObjectId;
 const populate = [{
     path: 'exam',
@@ -11,6 +14,31 @@ const populate = [{
     ]
 }]
 module.exports = {
+    list: async (req, res) => {
+        try {
+            const examTests = await ExamTest.find().sort({ createdAt: -1 }).populate(['examinee', 'exam']);
+            res.status(200).send(examTests);
+        } catch (error) {
+            console.log(JSON.stringify(error))
+            res.status(500).send({
+                error: JSON.stringify(error)
+            });
+        }
+    },
+    fetch: async (req, res) => {
+        try {
+            const { id } = req.params;
+            let examTest = (await ExamTest.findOne({
+                _id: id
+            }).populate([...populate, 'examinee']))
+            res.status(200).send(examTest);
+        } catch (error) {
+            console.log(JSON.stringify(error))
+            res.status(500).send({
+                error: JSON.stringify(error)
+            });
+        }
+    },
     fetchOrCreate: async (req, res) => {
         try {
             const exam = await Exam.findOne({ _id: ObjectId("63238be0723add4502fdb135") });
@@ -133,4 +161,43 @@ module.exports = {
             });
         }
     },
+    updateAudioAnswer: async (req, res) => {
+        try {
+            const { examTestId, questionId, answers: _answers } = req.body;
+            const answers = JSON.parse(_answers);
+            const file = req.file;
+            const url = `${UPLOAD}/${examTestId}_${questionId}_${file.filename}.wav`;
+            if (fs.existsSync(url)) fs.unlinkSync(url);
+            fs.copyFileSync(file.path, url);
+            fs.unlinkSync(file.path);
+            const examTest = await ExamTest.findOneAndUpdate({ _id: examTestId, examinee: req.user._id }, {
+                $set: {
+                    answers: answers.map((ans) => areSameIds(ans.question, questionId) ? ({ ...ans, audioUrl: `${req.headers.origin}/api/exam-test/${examTestId}/question/${questionId}/filename/${file.filename}/audio-answer` }) : ans )
+                }
+            }, { new: true });
+            res.status(200).send(examTest.answers);
+        } catch (error) {
+            console.log(JSON.stringify(error))
+            res.status(500).send({
+                error: JSON.stringify(error)
+            });
+        }
+    },
+    getAudioAnswer: async (req, res) => {
+        try {
+            const { examTestId, questionId, filename } = req.params;
+            const filter = {
+                _id: examTestId
+            };
+            if (req.user.email !== 'admin@gmail.com') filter.examinee = req.user._id;
+            const examTest = await ExamTest.findOne(filter);
+            if (!examTest) res.status(404).send({ error: 'Not found' });
+            else res.sendFile(path.join(__dirname, '../upload', `${examTestId}_${questionId}_${filename}.wav`));
+        } catch (error) {
+            console.log(JSON.stringify(error))
+            res.status(500).send({
+                error: JSON.stringify(error)
+            });
+        }
+    }
 };

@@ -38,7 +38,7 @@ const Component = () => {
 		try {
 			const response = await axios.post('/login', login)
 			dispatch(authActions.loginSuccess(response.data))
-			navigate('/testing');
+			if (response.data.email === 'admin@gmail.com') navigate('/dashboard'); else navigate('/testing');
 		} catch (error) {
 			dispatch(authActions.loginFail())
 			alert("Login failed!")

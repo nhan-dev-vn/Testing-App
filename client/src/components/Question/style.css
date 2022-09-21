@@ -11,3 +11,7 @@
 .option-container {
   width: fit-content;
 }
+.submitted-audio {
+  display: flex;
+  align-items: center;
+}

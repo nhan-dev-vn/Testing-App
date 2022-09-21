@@ -8,9 +8,12 @@ import {
   Route
 } from 'react-router-dom';
 import MainLayout from './layouts/MainLayout';
-import Home from './pages/Home';
-import Testing from './pages/Testing';
 import AuthGuard from './layouts/AuthGuard';
+import Dashboard from './pages/Dashboard';
+import Testing from './pages/Testing';
+import Review from './pages/Review';
+import Login from './pages/Login'
+import Home from './pages/Home';
 
 export const renderRoutes = (routes) => (
   <BrowserRouter>
@@ -50,7 +53,7 @@ const routes = [
   {
     exact: true,
     path: '/login',
-    component: lazy(() => import('./pages/Login'))
+    component: Login
   },
   // {
   //   exact: true,
@@ -65,14 +68,28 @@ const routes = [
   {
     exact: true,
     layout: MainLayout,
-    // guard: AuthGuard,ß
+    guard: AuthGuard,
+    path: '/dashboard',
+    component: Dashboard
+  },
+  {
+    exact: true,
+    layout: MainLayout,
+    guard: AuthGuard,
     path: '/testing',
     component: Testing
   },
   {
     exact: true,
+    layout: MainLayout,
+    guard: AuthGuard,
+    path: '/review/:examTestId',
+    component: Review
+  },
+  {
+    exact: true,
     path: '*',
-    component: lazy(() => import('./pages/Login'))
+    component: Home
   },
 ];
 

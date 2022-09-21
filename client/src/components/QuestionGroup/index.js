@@ -3,7 +3,7 @@ import React from 'react';
 import HtmlContent from '../HtmlContent';
 import Question from '../Question';
 
-const Component = ({ group, questions, startIndex, answers, setAnswers }) => {
+const Component = ({ group, questions, startIndex, answers, setAnswers, examTestId }) => {
   return (
     <div>
       <HtmlContent content={group.passage.html} />
@@ -22,7 +22,7 @@ const Component = ({ group, questions, startIndex, answers, setAnswers }) => {
         </div>
       )}
       {questions.map((question, index) => (
-        <Question key={question._id} question={question} index={index + startIndex} answers={answers} setAnswers={setAnswers} />
+        <Question key={question._id} question={question} index={index + startIndex} answers={answers} setAnswers={setAnswers} examTestId={examTestId} />
       ))}
     </div>
   );
