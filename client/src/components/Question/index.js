@@ -38,6 +38,7 @@ const Component = ({ question, index, answers, setAnswers, examTestId }) => {
     }
   }, [answers, question._id, question.score, setAnswers]);
   const [blob, setBlob] = useState();
+  const [blobUrl, setBlobUrl] = useState();
   const handleSubmitAudio = useCallback(async () => {
     try {
       const bodyFd = new FormData();
@@ -130,8 +131,11 @@ const Component = ({ question, index, answers, setAnswers, examTestId }) => {
           )}
           {setAnswers && (<ReactMediaRecorder
             video={false}
-            onStop={(url, blobData) => setBlob(blobData)}
-            render={({ status, startRecording, stopRecording, resumeRecording, pauseRecording, mediaBlobUrl, clearBlobUrl }) => (
+            onStop={(url, blobData) => {
+              setBlob(blobData);
+              setBlobUrl(URL.createObjectURL(blobData))
+            }}
+            render={({ status, startRecording, stopRecording, resumeRecording, pauseRecording, mediaBlobUrl, clearBlobUrl,  }) => (
               <div>
                 <p>
                   Click buttons to
@@ -146,7 +150,7 @@ const Component = ({ question, index, answers, setAnswers, examTestId }) => {
                 {(status === 'recording' || status === 'paused') && <IconButton onClick={stopRecording}><StopCircleIcon /></IconButton>}
                 {mediaBlobUrl && <Button onClick={handleSubmitAudio}>Submit</Button>}
                 <div>
-                  {mediaBlobUrl && <audio src={mediaBlobUrl} controls />}
+                  {blobUrl && <audio src={blobUrl} controls />}
                   {status === 'recording' && 'recording'}
                 </div>
               </div>

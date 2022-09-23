@@ -1,6 +1,6 @@
 import React, { } from 'react';
 import { Button } from '@mui/material';
-import { showDate } from '../../utils/date';
+import { showDateTime } from '../../utils/date';
 import './style.css'
 
 const Component = ({ title, examTest }) => {
@@ -8,7 +8,7 @@ const Component = ({ title, examTest }) => {
     <div id="review-header">
       <h1>{title}</h1>
       <div id="info">
-        Examinee: {examTest.examinee.name}, Started At: {showDate(examTest.startedAt)}, Finished At: {showDate(examTest.finishedAt)}
+        Examinee: {examTest.examinee.name}, Started At: {showDateTime(examTest.startedAt)}, Finished At: {showDateTime(examTest.finishedAt)}
       </div>
       {examTest.score !== undefined && (
         <div id="score">

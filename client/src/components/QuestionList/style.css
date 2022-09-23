@@ -1,0 +1,14 @@
+#question-list div[role="tablist"] {
+  flex-direction: column;
+}
+#question-list div[role="tablist"] button {
+  border-right: 1px solid #ddd;
+  border-bottom: 1px solid #ddd;
+}
+#question-list div[role="tablist"] button[aria-selected="true"] {
+  background-color: #1976d2;
+  color: white !important;
+}
+#question-list .MuiTabs-indicator {
+  display: none !important;
+}

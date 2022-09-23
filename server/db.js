@@ -51,3 +51,4 @@ require('./models/questions');
 require('./models/questionGroups');
 require('./models/exams');
 require('./models/examTests');
+require('./models/answers');

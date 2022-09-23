@@ -14,6 +14,7 @@ import Testing from './pages/Testing';
 import Review from './pages/Review';
 import Login from './pages/Login'
 import Home from './pages/Home';
+import Question from './pages/Question';
 
 export const renderRoutes = (routes) => (
   <BrowserRouter>
@@ -71,6 +72,13 @@ const routes = [
     guard: AuthGuard,
     path: '/dashboard',
     component: Dashboard
+  },
+  {
+    exact: true,
+    layout: MainLayout,
+    guard: AuthGuard,
+    path: 'type/:type/question/:id',
+    component: Question
   },
   {
     exact: true,

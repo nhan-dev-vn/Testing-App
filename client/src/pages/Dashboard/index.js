@@ -9,7 +9,7 @@ import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
 import Button from '@mui/material/Button';
 import { useNavigate } from 'react-router-dom';
-import { showDate } from '../../utils/date';
+import { showDateTime } from '../../utils/date';
 
 const Component = () => {
     const navigate = useNavigate();
@@ -50,8 +50,8 @@ const Component = () => {
                             >
                                 <TableCell>{test.examinee.name}</TableCell>
                                 <TableCell>{test.exam.title}</TableCell>
-                                <TableCell>{showDate(test.startedAt)}</TableCell>
-                                <TableCell>{showDate(test.finishedAt)}</TableCell>
+                                <TableCell>{showDateTime(test.startedAt)}</TableCell>
+                                <TableCell>{showDateTime(test.finishedAt)}</TableCell>
                                 <TableCell>{test.score?.total || 0}/{test.exam.fullScore}</TableCell>
                                 <TableCell>
                                     <Button onClick={() => navigate(`/review/${test._id}`)}>Review</Button>

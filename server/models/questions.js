@@ -21,6 +21,10 @@ var questionSchema = new mongoose.Schema({
       url: String
     }]
   },
+  name: String,
+  type: String, // writing-summarize/writing-essay/speaking-read-aloud
+  prepareTimeout: Number,
+  timeout: Number,
   ansType: String, // Multiple Choice/Single Choice/Audio/Text
   options: [optionSchema],
   score: Number,
