@@ -27,7 +27,9 @@ function a11yProps(index) {
 
 const categories = {
   'speaking': ['speaking-read-aloud', 'speaking-repeat-sentence', 'speaking-answer-short-question', 'speaking-describe-image', 'speaking-re-tell-lecture'],
-  'writing': ['writing-essay', 'writing-summarize']
+  'writing': ['writing-essay', 'writing-summarize'],
+  'reading': [],
+  'listening': []
 };
 
 export default function SimpleDialog(props) {
