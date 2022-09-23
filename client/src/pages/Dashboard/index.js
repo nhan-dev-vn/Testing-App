@@ -13,20 +13,20 @@ import { showDateTime } from '../../utils/date';
 
 const Component = () => {
     const navigate = useNavigate();
-    const [examTests, setExamTests] = useState([]);
+    // const [examTests, setExamTests] = useState([]);
 
-    const getData = useCallback(async () => {
-        try {
-            const response = await axios.get('/exam-tests');
-            setExamTests(response.data);
-        } catch (error) {
-            alert(JSON.stringify(error))
-        }
-    }, []);
+    // const getData = useCallback(async () => {
+    //     try {
+    //         const response = await axios.get('/exam-tests');
+    //         setExamTests(response.data);
+    //     } catch (error) {
+    //         alert(JSON.stringify(error))
+    //     }
+    // }, []);
 
-    useEffect(() => {
-        getData();
-    }, [getData]);
+    // useEffect(() => {
+    //     getData();
+    // }, [getData]);
 
     return (
         <div>

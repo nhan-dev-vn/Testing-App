@@ -41,6 +41,7 @@ const ctrlAnswer = require('./controllers/answer');
 
 app.post('/api/register', ctrlAuth.register);
 app.post('/api/login', ctrlAuth.login);
+app.post('/api/logout', ctrlAuth.checkAuth, ctrlAuth.logout);
 app.get('/api/session-login', ctrlAuth.checkAuth, ctrlAuth.sessionLogin);
 app.post('/api/user/update-profile', ctrlAuth.checkAuth, ctrlUser.updateProfile);
 app.get('/api/exam-test', ctrlAuth.checkAuth, ctrlExamTest.fetchOrCreate);

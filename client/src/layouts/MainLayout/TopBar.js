@@ -14,11 +14,14 @@ import MenuItem from '@mui/material/MenuItem';
 import AdbIcon from '@mui/icons-material/Adb';
 import { useSelector } from 'react-redux';
 import QuestionList from '../../components/QuestionList';
+import axios from '../../utils/axios';
+import { useNavigate } from 'react-router-dom';
 
 const pages = ['Speaking', 'Writing', 'Reading', 'Listening'];
 const settings = ['Logout'];
 
 const ResponsiveAppBar = () => {
+  const navigate = useNavigate();
   const { user } = useSelector((state) => state.auth);
   const [anchorElNav, setAnchorElNav] = React.useState(null);
   const [anchorElUser, setAnchorElUser] = React.useState(null);
@@ -38,6 +41,15 @@ const ResponsiveAppBar = () => {
   const handleCloseUserMenu = () => {
     setAnchorElUser(null);
   };
+
+  const handleLogout = async () => {
+    try {
+      await axios.post('/logout');
+      navigate('/');
+    } catch (error) {
+      alert('error')
+    }
+  }
 
   return (
     <AppBar position="sticky">
@@ -132,7 +144,7 @@ const ResponsiveAppBar = () => {
           <Box sx={{ flexGrow: 0 }}>
             <Tooltip title="Open settings">
               <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-                <Avatar alt="Remy Sharp" src="/static/images/avatar/2.jpg" />
+                <Avatar alt={user.name} src="/static/images/avatar/2.jpg" />
               </IconButton>
             </Tooltip>
             <Menu
@@ -152,7 +164,10 @@ const ResponsiveAppBar = () => {
               onClose={handleCloseUserMenu}
             >
               {settings.map((setting) => (
-                <MenuItem key={setting} onClick={handleCloseUserMenu}>
+                <MenuItem key={setting} onClick={() => {
+                  handleCloseUserMenu();
+                  if (setting === 'Logout') handleLogout();
+                }}>
                   <Typography textAlign="center">{setting}</Typography>
                 </MenuItem>
               ))}

@@ -38,7 +38,7 @@ const Component = () => {
 		try {
 			const response = await axios.post('/login', login)
 			dispatch(authActions.loginSuccess(response.data))
-			if (response.data.email === 'admin@gmail.com') navigate('/dashboard'); else navigate('/testing');
+			navigate('/dashboard');
 		} catch (error) {
 			dispatch(authActions.loginFail())
 			alert("Login failed!")
@@ -58,7 +58,7 @@ const Component = () => {
 	return (
 		<div id="login">
 			<h2>Welcome to Ridhima Test Online</h2>
-			<div className="container" id="container">
+			<div className="login-container" id="container">
 				<div className="form-container sign-up-container">
 					<div className='form'>
 						<h1>Create Account</h1>

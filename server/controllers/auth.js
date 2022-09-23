@@ -33,6 +33,19 @@ module.exports = {
             });
         }
     },
+    logout: async (req, res) => {
+        try {
+            res.cookie('token', undefined);
+            req.user = undefined;
+            res.cookie('user', undefined);
+            res.status(200).send({});
+        } catch (error) {
+            console.log(JSON.stringify(error))
+            res.status(401).send({
+                error: JSON.stringify(error)
+            });
+        }
+    },
     sessionLogin: async (req, res) => {
         try {
             res.status(200).send({
