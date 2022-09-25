@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import Question from '../../components/Question';
 import QuestionGroup from '../../components/QuestionGroup';
 import Loading from '../Loading';
@@ -7,113 +7,101 @@ import './style.css'
 import axios from '../../utils/axios';
 import Header from './Header';
 import { Button } from '@mui/material';
-
-const PART_IDX = ['I', 'II', 'III', 'IV']
+import useCountDownTime from '../../hooks/useCountDownTime';
+import ConfirmBox from '../../components/ConfirmBox';
 
 const Component = () => {
     const navigate = useNavigate();
+    const { id } = useParams();
     const [examTest, setExamTest] = useState();
     const [exam, setExam] = useState();
     const [loading, setLoading] = useState(true);
     const [answers, setAnswers] = useState([]);
-    const [startedAt, setStartedAt] = useState();
-    const [score, setScore] = useState();
+    const [currQIdx, setCurrQIdx] = useState(0);
+    const { count, start, showCount, reset } = useCountDownTime(0, 0);
+    const [confirm, setConfirm] = useState();
+    const [questions, setQuestions] = useState([]);
+
+
+    const handleStart = useCallback(async (id) => {
+        try {
+            const response = await axios.post('/exam-test/' + id + '/start-testing');
+            const _examTest = response.data;
+            if (_examTest) {
+                setExamTest(prev => ({ ...prev, status: _examTest.status, startedAt: _examTest.startedAt }));
+                reset(_examTest.elapsedTime, 0)
+                start();
+            }
+        } catch (error) {
+            alert(JSON.stringify(error));
+        }
+    }, [reset, start]);
+    const handleResume = useCallback(async (id) => {
+        try {
+            const response = await axios.post('/exam-test/' + id + '/resume-testing');
+            const _examTest = response.data;
+            if (_examTest) {
+                setExamTest(prev => ({ ...prev, status: _examTest.status, startedAt: _examTest.startedAt }));
+                reset(_examTest.elapsedTime, 0)
+                start();
+            }
+        } catch (error) {
+            alert(JSON.stringify(error));
+        }
+    }, [reset, start]);
+
     useEffect(() => {
         (async () => {
             try {
-                const response = await axios.get('/exam-test');
-                setAnswers(response.data.answers);
-                setExam(response.data.exam);
-                setStartedAt(response.data.startedAt);
-                setExamTest(response.data);
+                const response = await axios.get('/exam-tests/' + id);
+                const _examTest = response.data;
+                if (!_examTest) throw Error("Not found test");
+                
+                const res = await axios.get('/answers?examTestId=' + _examTest._id);
+                const _answers = res.data;
+                setAnswers(_answers);
+                const _exam = _examTest.exam;
+                setExam(_exam);
+                let _questions = [];
+                _exam.parts.forEach((part) => _questions = _questions.concat(part.questions));
+                setQuestions(_questions);
+                setCurrQIdx(_questions.findLastIndex((q) => _answers.find((ans) => ans.question === q._id)) + 1);
+                setExamTest(_examTest);
+                if (_examTest.status === 'new') {
+                    setConfirm({
+                        description: 'Start testing right now',
+                        confirmAction: () => handleStart(_examTest._id),
+                        disabledCancel: true,
+                        disabledBackdropClick: true
+                    });
+                }
+                if (_examTest.status === 'paused') {
+                    setConfirm({
+                        description: 'Resume testing right now',
+                        confirmAction: () => handleResume(_examTest._id),
+                        disabledCancel: true,
+                        disabledBackdropClick: true
+                    });
+                }
+                if (_examTest.start === 'finished') {
+                    alert('Test finished')
+                    navigate('/tests');
+                }
             } catch (error) {
                 alert(JSON.stringify(error));
             }
             setLoading(false);
         })();
-    }, []);
-
-    const handleUpdateAnswer = useCallback(async (_answers) => {
-        if (!examTest?._id) return;
-        try {
-            setAnswers(_answers);
-            await axios.post('/exam-test/' + examTest._id + '/update-answer',
-                { answers: _answers }
-            );
-        } catch (error) {
-            alert(JSON.stringify(error));
-        }
-    }, [examTest?._id]);
-
-    const handleStart = useCallback(async () => {
-        try {
-            if (!examTest?._id) return;
-            const response = await axios.post('/exam-test/' + examTest._id + '/start-testing');
-            setStartedAt(response.data.startedAt);
-        } catch (error) {
-            alert(JSON.stringify(error));
-        }
-    }, [examTest?._id]);
-    const handleFinish = useCallback(async () => {
-        try {
-            if (!examTest?._id) return;
-            const response = await axios.post('/exam-test/' + examTest._id + '/finish-testing');
-            setScore(response.data.score);
-        } catch (error) {
-            alert(JSON.stringify(error));
-        }
-    }, [examTest?._id]);
-
-    const handleTestingAgain = useCallback(() => { navigate(0) }, [navigate]);
+    }, [id]);
 
     return (
         loading ? <Loading /> : examTest ?
             <div id="testing">
-                <Header title={exam.title} onFinish={handleFinish} startedAt={startedAt} onStart={handleStart} score={score} />
-                {startedAt && score === undefined && (
-                    exam.parts.map((part, i) => (
-                        <div className='part' key={part._id}>
-                            <h2>{PART_IDX[i]}. {part.title}</h2>
-                            {part.questions.map((question, idx) => {
-                                if (!question.group) {
-                                    return (
-                                        <Question
-                                            key={question._id}
-                                            question={question}
-                                            index={idx + 1}
-                                            answers={answers}
-                                            setAnswers={handleUpdateAnswer}
-                                            examTestId={examTest._id}
-                                        />
-                                    );
-                                } else if (question.group !== (part.questions[idx - 1]?.group)) {
-                                    return (
-                                        <QuestionGroup
-                                            key={question.group}
-                                            group={part.questionGroups.find((g) => g._id === question.group)}
-                                            startIndex={idx + 1}
-                                            questions={part.questions.filter((q) => q.group === question.group)}
-                                            answers={answers}
-                                            setAnswers={handleUpdateAnswer}
-                                            examTestId={examTest._id}
-                                        />
-                                    );
-                                } else return (<></>);
-                            })}
-                        </div>
-                    ))
-                )
-                }
-                {score !== undefined && (
-                    <div id="score">
-                        <h1><span>{score.total}</span>/{exam.fullScore}</h1>
-                        <div>Listening: {score.Listening}/{exam.parts.find((p) => p.title === 'Listening')?.fullScore}</div>
-                        <div>Reading: {score.Reading}/{exam.parts.find((p) => p.title === 'Reading')?.fullScore}</div>
-                        <div>Speaking: {score.Speaking}/{exam.parts.find((p) => p.title === 'Speaking')?.fullScore}</div>
-                        <div>Writing: {score.Writing}/{exam.parts.find((p) => p.title === 'Writing')?.fullScore}</div>
-                        <Button variant="outlined" color="secondary" onClick={handleTestingAgain}>Testing again</Button>
-                    </div>
+                <Header examTest={examTest} elapsedTime={showCount} currQIdx={currQIdx} totalQ={questions.length} />
+                {examTest.status === 'testing' && (
+                    <>Testing</>
                 )}
+                {confirm && <ConfirmBox {...confirm} />}
             </div>
             : <></>
     );

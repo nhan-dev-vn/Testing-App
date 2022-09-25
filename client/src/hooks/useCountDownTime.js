@@ -21,9 +21,9 @@ const useCountDownTime = (from = 0, to = 0, onStop = () => {}) => {
     }, 1000);
   }, [stop, to]);
 
-  const reset = useCallback(() => {
+  const reset = useCallback((_from) => {
     clearInterval(intervalRef.current);
-    setCount(from);
+    setCount(_from || from);
   }, [from]);
 
   const showCount = useMemo(() => showCountTime(count), [count]);

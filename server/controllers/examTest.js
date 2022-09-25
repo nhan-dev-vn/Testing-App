@@ -12,11 +12,17 @@ const populate = [{
         'parts.questions',
         'parts.questionGroups'
     ]
+}, {
+    path: 'examinee'
 }]
 module.exports = {
     list: async (req, res) => {
         try {
-            const examTests = await ExamTest.find().sort({ createdAt: -1 }).populate(['examinee', 'exam']);
+            const { onlyMe } = req.query;
+            if (req.user.email !== 'admin@gmail.com' && onlyMe !== 'true') throw 'Not permission';
+            const filter = {};
+            if (onlyMe === 'true') filter.examinee = req.user._id;
+            const examTests = await ExamTest.find(filter).sort({ createdAt: -1 }).populate(populate);
             res.status(200).send(examTests);
         } catch (error) {
             console.log(JSON.stringify(error))
@@ -25,12 +31,16 @@ module.exports = {
             });
         }
     },
-    fetch: async (req, res) => {
+    fetchByExamId: async (req, res) => {
         try {
-            const { id } = req.params;
-            let examTest = (await ExamTest.findOne({
-                _id: id
-            }).populate([...populate, 'examinee']))
+            const { examId } = req.params;
+            const filter = {
+                exam: examId,
+                examinee: req.user._id,
+                status: { $ne: 'finished' }
+            };
+            let examTest = (await ExamTest.findOne(filter).populate(populate))
+            
             res.status(200).send(examTest);
         } catch (error) {
             console.log(JSON.stringify(error))
@@ -39,33 +49,49 @@ module.exports = {
             });
         }
     },
-    fetchOrCreate: async (req, res) => {
+    fetchById: async (req, res) => {
         try {
-            const exam = await Exam.findOne({ _id: ObjectId("63238be0723add4502fdb135") });
-            let examTest = (await ExamTest.findOne({
-                examinee: req.user?._id,
-                finishedAt: null
-                // $or: [{
-                //     startedAt: null
-                // }, {
-                //     $and: [{
-                //         startedAt: { $gt: new Date(new Date().getTime() - exam.timeout * 60 * 1000) }
-                //     }, {
-                //         finishedAt: null
-                //     }]
-                // }]
-            }).populate(populate))
-            if (!examTest) {
-                examTest = await (new ExamTest({
-                    exam: ObjectId("63238be0723add4502fdb135"),
-                    examinee: req.user?._id,
-                    answers: []
-                })).save();
-                examTest = (await ExamTest.findOne({
-                    _id: examTest._id,
-                }).populate(populate))
-            }
+            const { id } = req.params;
+            let examTest = (await ExamTest.findById(id).populate(populate))
+            if (examTest.status === 'testing') {
+                const now = new Date();
+                const testedTime = Math.floor((now.getTime() - new Date(examTest.startedAt).getTime()) / 1000)
+                const update = {
 
+                }
+                if (testedTime > examTest.timeout) {
+                    update.status = 'finished'
+                    update.finishedAt = now
+                } else {
+                    update.status = 'paused'
+                    update.elapsedTime = examTest.timeout - testedTime
+                }
+                examTest = await ExamTest.findByIdAndUpdate(examTest._id, {
+                    $set: update
+                }, { new: true });
+            }
+            res.status(200).send(examTest);
+        } catch (error) {
+            console.log(JSON.stringify(error))
+            res.status(500).send({
+                error: JSON.stringify(error)
+            });
+        }
+    },
+    create: async (req, res) => {
+        try {
+            const { examId } = req.body;
+            const exam = (await Exam.findById(examId))?.toObject();
+            if (!exam) throw "Test template not found";
+            let examTest = new ExamTest({
+                title: exam.title,
+                exam: examId,
+                timeout: exam.timeout,
+                status: 'new',
+                elapsedTime: exam.timeout,
+                examinee: req.user._id
+            });
+            examTest = await examTest.save();
             res.status(200).send(examTest);
         } catch (error) {
             console.log(JSON.stringify(error))
@@ -78,9 +104,10 @@ module.exports = {
         try {
             let examTest = (await ExamTest.findOneAndUpdate({
                 examinee: req.user?._id,
-                _id: req.params.id
+                _id: req.params.id,
+                status: 'new'
             }, {
-                $set: { startedAt: new Date() }
+                $set: { startedAt: new Date(), status: 'testing' }
             }, { new: true }).populate(populate))
             if (!examTest) {
                 throw "Not found";
@@ -97,42 +124,14 @@ module.exports = {
         try {
             let examTest = (await ExamTest.findOneAndUpdate({
                 examinee: req.user?._id,
-                _id: req.params.id
+                _id: req.params.id,
+                status: 'testing'
             }, {
-                $set: { finishedAt: new Date() }
+                $set: { finishedAt: new Date(), status: 'finished' }
             }, { new: true }).populate(populate))?.toObject();
             if (!examTest) {
                 throw "Not found";
             }
-            const exam = examTest.exam;
-            const score = {
-                Listening: 0,
-                Reading: 0,
-                Speaking: 0,
-                Writing: 0,
-                total: 0
-            };
-            exam.parts.forEach((part) => {
-                part.questions.forEach((q) => {
-                    const ans = examTest.answers.find((ans) => areSameIds(ans.question, q._id));
-                    if (ans) {
-                        if (q.ansType === 'Single Choice') {
-                            const correctOptionId = q.options.find((o) => o.value === 'true')?._id;
-                            if (ans.choices.find(choice => areSameIds(choice, correctOptionId))) {
-                                score[part.title]+=q.score;
-                                score.total+=q.score;
-                            }
-                        }
-                    }
-                });
-            });
-            examTest = await ExamTest.findOneAndUpdate({
-                _id: req.params.id
-            }, {
-                $set: {
-                    score
-                }
-            }, { new: true }).populate(populate);
             res.status(200).send(examTest);
         } catch (error) {
             console.log(JSON.stringify(error))
@@ -141,18 +140,23 @@ module.exports = {
             });
         }
     },
-    updateAnswer: async (req, res) => {
+    pauseTesting: async (req, res) => {
         try {
-            let examTest = (await ExamTest.findOneAndUpdate({
+            let examTest = (await ExamTest.findOne({
                 examinee: req.user?._id,
-                _id: req.params.id
+                _id: req.params.id,
+                status: 'testing'
+            }))?.toObject();
+            examTest = (await ExamTest.findOneAndUpdate({
+                examinee: req.user?._id,
+                _id: req.params.id,
+                status: 'testing'
             }, {
-                $set: { answers: req.body.answers }
-            }, { new: true }).populate(populate))
+                $set: { elapsedTime: examTest.timeout - Math.floor((new Date().getTime() - new Date(examTest.startedAt).getTime()) / 1000) , status: 'paused' }
+            }, { new: true }).populate(populate))?.toObject();
             if (!examTest) {
                 throw "Not found";
             }
-
             res.status(200).send(examTest);
         } catch (error) {
             console.log(JSON.stringify(error))
@@ -161,21 +165,24 @@ module.exports = {
             });
         }
     },
-    updateAudioAnswer: async (req, res) => {
+    resumeTesting: async (req, res) => {
         try {
-            const { examTestId, questionId, answers: _answers } = req.body;
-            const answers = JSON.parse(_answers);
-            const file = req.file;
-            const url = `${UPLOAD}/${examTestId}_${questionId}_${file.filename}.wav`;
-            if (fs.existsSync(url)) fs.unlinkSync(url);
-            fs.copyFileSync(file.path, url);
-            fs.unlinkSync(file.path);
-            const examTest = await ExamTest.findOneAndUpdate({ _id: examTestId, examinee: req.user._id }, {
-                $set: {
-                    answers: answers.map((ans) => areSameIds(ans.question, questionId) ? ({ ...ans, audioUrl: `${req.headers.origin}/api/exam-test/${examTestId}/question/${questionId}/filename/${file.filename}/audio-answer` }) : ans )
-                }
-            }, { new: true });
-            res.status(200).send(examTest.answers);
+            let examTest = (await ExamTest.findOne({
+                examinee: req.user?._id,
+                _id: req.params.id,
+                status: 'paused'
+            }))?.toObject();
+            examTest = (await ExamTest.findOneAndUpdate({
+                examinee: req.user?._id,
+                _id: req.params.id,
+                status: 'paused'
+            }, {
+                $set: { status: 'testing' }
+            }, { new: true }).populate(populate))?.toObject();
+            if (!examTest) {
+                throw "Not found";
+            }
+            res.status(200).send(examTest);
         } catch (error) {
             console.log(JSON.stringify(error))
             res.status(500).send({
@@ -183,21 +190,4 @@ module.exports = {
             });
         }
     },
-    getAudioAnswer: async (req, res) => {
-        try {
-            const { examTestId, questionId, filename } = req.params;
-            const filter = {
-                _id: examTestId
-            };
-            if (req.user.email !== 'admin@gmail.com') filter.examinee = req.user._id;
-            const examTest = await ExamTest.findOne(filter);
-            if (!examTest) res.status(404).send({ error: 'Not found' });
-            else res.sendFile(path.join(__dirname, '../upload', `${examTestId}_${questionId}_${filename}.wav`));
-        } catch (error) {
-            console.log(JSON.stringify(error))
-            res.status(500).send({
-                error: JSON.stringify(error)
-            });
-        }
-    }
 };

@@ -8,7 +8,7 @@ const Component = ({ children }) => {
     return (
         <Box position="relative">
             <TopBar />
-            <Container maxWidth="md">
+            <Container maxWidth="md" style={{ paddingTop: 30, paddingBottom: 30 }}>
             {children}
             </Container>
         </Box>

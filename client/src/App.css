@@ -46,8 +46,14 @@ button.ghost {
 	display: flex;
 }
 .font-weight-500 {
-	font-weight: bold;
+	font-weight: 500 !important;
 }
 .align-items-center {
 	align-items: center;
+}
+.cursor-pointer {
+	cursor: pointer;
+}
+.link:hover {
+	color: #1976d2;
 }

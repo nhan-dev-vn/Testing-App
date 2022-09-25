@@ -1,17 +1,24 @@
-import React, { } from 'react';
-import { Button } from '@mui/material';
+import React, { useEffect } from 'react';
+import { Box, Typography, Container } from '@mui/material';
+import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import SegmentIcon from '@mui/icons-material/Segment';
+import { showCountTime } from '../../utils/date';
 
-const Component = ({ title, onFinish, startedAt, onStart, score }) => {
+const Component = ({ examTest, elapsedTime, currQIdx, totalQ }) => {
   return (
-    <div id="testing-header">
-      <div></div>
-      <h1>{title}</h1>
-      {score === undefined ? (startedAt ? (
-        <Button variant="contained" color="error" onClick={onFinish}>Finish</Button>
-      ) : (
-        <Button variant="contained" color="primary" onClick={onStart}>Start</Button>
-      )) : <div></div>}
-    </div>
+    <Box id="testing-header-container">
+    <Container maxWidth="md" id="testing-header">
+      <h3>{examTest.title}</h3>
+      <Box width={130}>
+        <Typography className='d-flex align-items-center'>
+          <AccessTimeIcon style={{ marginRight: 5 }} /> {examTest.status === 'testing' ? elapsedTime : showCountTime(examTest.elapsedTime)} / {showCountTime(examTest.timeout)}
+        </Typography>
+        <Typography className='d-flex align-items-center'>
+          <SegmentIcon style={{ marginRight: 5 }} /> {currQIdx + 1} of {totalQ}
+        </Typography>
+      </Box>
+    </Container>
+    </Box>
   );
 };
 

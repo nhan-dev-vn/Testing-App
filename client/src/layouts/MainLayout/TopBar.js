@@ -17,7 +17,8 @@ import QuestionList from '../../components/QuestionList';
 import axios from '../../utils/axios';
 import { useNavigate } from 'react-router-dom';
 
-const pages = ['Speaking', 'Writing', 'Reading', 'Listening'];
+const testParts = ['Speaking', 'Writing', 'Reading', 'Listening'];
+
 const settings = ['Logout'];
 
 const ResponsiveAppBar = () => {
@@ -103,11 +104,14 @@ const ResponsiveAppBar = () => {
                 display: { xs: 'block', md: 'none' },
               }}
             >
-              {pages.map((page) => (
+              {testParts.map((page) => (
                 <MenuItem key={page} onClick={() => {setType(page.toLowerCase());handleCloseNavMenu();}}>
                   <Typography textAlign="center">{page}</Typography>
                 </MenuItem>
               ))}
+              <MenuItem onClick={() => navigate('/tests')}>
+                <Typography textAlign="center">Tests</Typography>
+              </MenuItem>
             </Menu>
           </Box>
           <AdbIcon sx={{ display: { xs: 'flex', md: 'none' }, mr: 1 }} />
@@ -130,7 +134,7 @@ const ResponsiveAppBar = () => {
             TESTING
           </Typography>
           <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' } }}>
-            {pages.map((page) => (
+            {testParts.map((page) => (
               <Button
                 key={page}
                 onClick={() => {setType(page.toLowerCase());handleCloseNavMenu();}}
@@ -139,6 +143,12 @@ const ResponsiveAppBar = () => {
                 {page}
               </Button>
             ))}
+            <Button
+                onClick={() => navigate('/tests')}
+                sx={{ my: 2, color: 'white', display: 'block' }}
+              >
+                Tests
+              </Button>
           </Box>
 
           <Box sx={{ flexGrow: 0 }}>

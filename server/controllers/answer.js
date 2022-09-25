@@ -7,11 +7,15 @@ const fs = require('fs');
 module.exports = {
     list: async (req, res) => {
         try {
-            const { questionId, onlyMe } = req.query;
+            const { questionId, onlyMe, examTestId } = req.query;
             const filter = {
-                question: new ObjectId(questionId)
             };
+            if (questionId) filter.question = questionId
             if (onlyMe === 'true') filter.user = req.user._id;
+            if (examTestId) {
+                filter.user = req.user._id;
+                filter.examTest = examTestId;
+            }
             const answers = await Answer.find(filter).sort({ createdAt: -1 }).populate(['user']);
             res.status(200).send(answers);
         } catch (error) {

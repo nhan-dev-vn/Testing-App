@@ -6,6 +6,10 @@ var answerSchema = new mongoose.Schema({
     ref: 'User',
     required: true
   },
+  exemTest: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'ExamTest',
+  },
   question: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Question',

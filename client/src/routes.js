@@ -15,6 +15,7 @@ import Review from './pages/Review';
 import Login from './pages/Login'
 import Home from './pages/Home';
 import Question from './pages/Question';
+import Tests from './pages/Tests';
 
 export const renderRoutes = (routes) => (
   <BrowserRouter>
@@ -84,7 +85,13 @@ const routes = [
     exact: true,
     layout: MainLayout,
     guard: AuthGuard,
-    path: '/testing',
+    path: '/tests',
+    component: Tests
+  },
+  {
+    exact: true,
+    guard: AuthGuard,
+    path: '/testing/:id',
     component: Testing
   },
   {

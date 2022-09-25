@@ -1,12 +1,10 @@
-#testing {
-  width: 100vw;
-  max-width: 1000px;
-  margin: auto;
-  padding: 0 2rem 2rem 2rem;
+#testing-header-container {
+  background: #1976d2;
+  color: white;
 }
 #testing-header {
-  padding: 3rem 0;
   display: flex;
+  padding: 1rem 0;
   justify-content: space-between;
 }
 #score {
