@@ -68,9 +68,11 @@ const Component = ({ question, reload }) => {
           style={{ width: '100%' }}
           value={text}
           onChange={handleChangeText}
-          disabled={submitted}
+          disabled={submitted || !count}
         />
-        {submitted && <Button variant="contained" color="primary" onClick={handleRedo} className="re-do over-text">Re-do</Button>}
+        <Box position="absolute" zIndex={submitted || !count ? 1 : -1} display="flex" width="100%" height="100%" alignItems="center" justifyContent="center" top={0} left={0}>
+          <Button variant="contained" color="primary" onClick={handleRedo} className="">Re-do</Button>
+        </Box>
       </Box>
       <Box py={1}>
         <Button variant="contained" disabled={!enableSubmit} color={enableSubmit ? 'primary' : 'inherit'} onClick={handleSubmit}>Submit</Button>

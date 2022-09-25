@@ -1,0 +1,33 @@
+.guide {
+  color: rgb(102, 102, 102);
+}
+.re-do {
+  margin-left: 10px !important;
+}
+.option-idx {
+  font-size: 16px;
+}
+.option-text {
+  margin-left: 10px;
+}
+.option-container {
+  width: fit-content;
+  display: flex;
+  margin-bottom: 10px;
+}
+.option-container .html-content p {
+  margin: 0 !important;
+}
+
+.wrongOption {
+  background-color: red;
+}
+.correctOption {
+  background-color: green;
+}
+.trueOption {
+  background-color: #ddd;
+}
+.MuiFormControlLabel-label.Mui-disabled {
+  color: inherit !important;
+}

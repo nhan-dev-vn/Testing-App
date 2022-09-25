@@ -12,10 +12,19 @@ import DescribeImage from '../../components/Speaking/DescribeImage';
 import RepeatSentence from '../../components/Speaking/RepeatSentence';
 import AnswerShortQuestion from '../../components/Speaking/AnswerShortQuestion';
 import ReTellLecture from '../../components/Speaking/ReTellLecture';
+import SummarizeSpokenText from '../../components/Listening/SummarizeSpokenText';
+import WriteFromDictation from '../../components/Listening/WriteFromDictation';
+import ListeningSingleChoice from '../../components/Listening/SingleChoice';
+import ListeningMultipleChoice from '../../components/Listening/MultipleChoice'
+import HighlightCorrectSummary from '../../components/Listening/HighlightCorrectSummary';
+import SelectMissingWord from '../../components/Listening/SelectMissingWord';
+import ReadingSingleChoice from '../../components/Reading/SingleChoice';
+import ReadingMultipleChoice from '../../components/Reading/MultipleChoice';
 import './style.css';
 import { useSelector } from 'react-redux';
 import { showDate } from '../../utils/date';
 import HtmlContent from '../../components/HtmlContent';
+import { LABELS } from '../../components/Question';
 
 function TabPanel(props) {
     const { children, value, index, ...other } = props;
@@ -95,6 +104,14 @@ const Component = () => {
                 {question.type === 'speaking-repeat-sentence' && <RepeatSentence question={question} reload={reload} />}
                 {question.type === 'speaking-answer-short-question' && <AnswerShortQuestion question={question} reload={reload} />}
                 {question.type === 'speaking-re-tell-lecture' && <ReTellLecture question={question} reload={reload} />}
+                {question.type === 'listening-summarize-spoken-text' && <SummarizeSpokenText question={question} reload={reload} />}
+                {question.type === 'listening-write-from-dictation' && <WriteFromDictation question={question} reload={reload} />}
+                {question.type === 'listening-single-choice' && <ListeningSingleChoice question={question} reload={reload} />}
+                {question.type === 'listening-multiple-choice' && <ListeningMultipleChoice question={question} reload={reload} />}
+                {question.type === 'listening-highlight-correct-summary' && <HighlightCorrectSummary question={question} reload={reload} />}
+                {question.type === 'listening-select-missing-word' && <SelectMissingWord question={question} reload={reload} />}
+                {question.type === 'reading-single-choice' && <ReadingSingleChoice question={question} reload={reload} />}
+                {question.type === 'reading-multiple-choice' && <ReadingMultipleChoice question={question} reload={reload} />}
 
                 <Box p={1} sx={{ borderBottom: 1, borderColor: 'divider' }}>
                     <Tabs value={tab} onChange={handleChangeTab} aria-label="basic tabs example">
@@ -112,6 +129,16 @@ const Component = () => {
                             </Box>
                             {ans.text && <HtmlContent content={ans.text} />}
                             {ans.audio && <audio src={ans.audio.url} controls />}
+                            {question.ansType === 'Single Choice' && (
+                                <Typography>
+                                    {LABELS[question.options.findIndex(o => o._id === ans.choices[0])]}
+                                </Typography>
+                            )}
+                            {question.ansType === 'Multiple Choice' && (
+                                <Typography>
+                                    {ans.choices.map((oId) => LABELS[question.options.findIndex(o => o._id === oId)]).join(', ')}
+                                </Typography>
+                            )}
                         </Box>
                     ))}
                 </Box>

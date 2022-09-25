@@ -28,8 +28,8 @@ function a11yProps(index) {
 const categories = {
   'speaking': ['speaking-read-aloud', 'speaking-repeat-sentence', 'speaking-answer-short-question', 'speaking-describe-image', 'speaking-re-tell-lecture'],
   'writing': ['writing-essay', 'writing-summarize'],
-  'reading': [],
-  'listening': []
+  'reading': ['reading-and-writing-fill-in-the-blanks', 'reading-multiple-choice', 'reading-single-choice', 'reading-fill-in-the-blanks', 'reading-re-order-paragraphs'],
+  'listening': ['listening-summarize-spoken-text', 'listening-write-from-dictation', 'listening-multiple-choice', 'listening-single-choice', 'listening-fill-in-the-blanks', 'listening-highlight-correct-summary', 'listening-select-missing-word', 'listening-highlight-incorrect-words']
 };
 
 export default function SimpleDialog(props) {

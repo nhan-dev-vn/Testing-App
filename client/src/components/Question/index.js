@@ -16,7 +16,7 @@ import axios from '../../utils/axios';
 import CKEditor from '../CKEditor';
 import { stripHTMLTags } from '../../utils/html';
 import { getImagesProperty } from '../../utils/image';
-const LABELS = ['A', 'B', 'C', 'D']
+export const LABELS = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']
 
 const Component = ({ question, index, answers, setAnswers, examTestId }) => {
   const answer = useMemo(() => answers.find((ans) => ans.question === question._id), [answers, question._id]);

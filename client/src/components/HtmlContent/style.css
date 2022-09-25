@@ -9,6 +9,8 @@
   letter-spacing: 0.00938em !important;
   white-space: pre-line;
 }
+.html-content p {
+}
 .html-content img {
   max-width: 90%;  
   height: auto !important
