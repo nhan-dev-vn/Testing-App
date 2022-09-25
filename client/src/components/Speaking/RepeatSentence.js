@@ -65,8 +65,15 @@ const Component = ({ question, reload }) => {
     startPrepare();
   }, []);
 
+  const resetAudio = useCallback(async () => {
+    const demoAudio = document.getElementById('demo-audio');
+    await demoAudio.pause();
+    demoAudio.currentTime = 0;
+  }, []);
+
   const handleRedo = useCallback(() => {
     startRecord();
+    resetAudio();
   }, [startRecord]);
 
   const handleSubmit = useCallback(async () => {
@@ -78,10 +85,11 @@ const Component = ({ question, reload }) => {
       setSubmitted(true);
       setEnableSubmit(false);
       reload();
+      resetAudio()
     } catch (error) {
       alert('error')
     }
-  }, [question._id, blob, reload]);
+  }, [question._id, blob, reload, resetAudio]);
 
   useEffect(() => {
     setEnableSubmit(blob);
