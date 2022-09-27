@@ -58,7 +58,7 @@ const Component = ({ question, reload }) => {
     <Box p={3}>
       <Typography className="guide">
         <Typography variant="h5">Single Choice</Typography>
-        Listen to the recording and answer the single-choice question by selectingthe correct response . Only one response is correct.
+        Read the text and answer the question by selecting all the correct responses. More than one response is correct.
       </Typography>
       <Box py={1} />
       <Typography># {question.name}</Typography>

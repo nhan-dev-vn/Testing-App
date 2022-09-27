@@ -1,10 +1,16 @@
-import React, { useMemo, useState, useRef, useCallback } from 'react';
+import React, { useMemo, useEffect, useState, useRef, useCallback } from 'react';
 import { showCountTime } from '../utils/date';
 
 const useCountTime = (from = 0, to = 0, onStop = () => {}) => {
   const [count, setCount] = useState(from);
   const [isCounting, setIsCounting] = useState(false);
   const intervalRef = useRef();
+
+  useEffect(() => {
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current)
+    }
+  }, []);
 
   const stop = useCallback(() => {
     clearInterval(intervalRef.current);

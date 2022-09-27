@@ -16,9 +16,9 @@ import {
 const useStyles = makeStyles(() => ({
 }));
 
-const ConfirmBox = ({ description, confirmText = 'Yes', cancelText = 'No', confirmAction, cancelAction, disabledCancel, disabledBackdropClick }) => {
+const ConfirmBox = ({ description, confirmText = 'Yes', cancelText = 'No', onFinish, confirmAction = () => {}, cancelAction = () => {}, disabledCancel, disabledBackdropClick }) => {
   const [open, setOpen] = useState(true);
-  const onClose = useCallback(() => setOpen(false), []);
+  const onClose = useCallback(() => {setOpen(false); onFinish()}, [onFinish]);
 
   const onCancel = useCallback(() => {
     cancelAction();

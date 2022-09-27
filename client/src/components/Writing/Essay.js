@@ -34,7 +34,7 @@ const Component = ({ question, reload }) => {
     try {
       await axios.post('/answer', {
         question: question._id,
-        text: text.trim()
+        text: text?.trim()
       });
       setSubmitted(true);
       setEnableSubmit(false);

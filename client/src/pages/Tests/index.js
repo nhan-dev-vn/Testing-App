@@ -77,6 +77,7 @@ export default function Component() {
       const response = await axios.get('/exam-tests/exams/' + examId);
       if (response.data) {
         setConfirm({
+          onFinish: () => setConfirm(undefined),
           description: 'You did not finish this test last time. Do you want to continue from your saved session?',
           confirmText: 'Continue',
           cancelText: 'Start new',

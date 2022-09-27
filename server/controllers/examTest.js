@@ -5,6 +5,7 @@ const { areSameIds } = require('../utils');
 const { UPLOAD, server } = require('../server');
 const fs = require('fs');
 const path = require('path');
+const Answer = require('../models/answers');
 const ObjectId = mongoose.Types.ObjectId;
 const populate = [{
     path: 'exam',
@@ -15,6 +16,37 @@ const populate = [{
 }, {
     path: 'examinee'
 }]
+const scoring = async (id) => {
+    try {
+        const examTest = (await ExamTest.findById(id).populate(populate))?.toObject();
+        if (!examTest) return;
+        const answers = await Answer.find({
+            examTestId: id
+        });
+
+        const exam = examTest.exam;
+        const score = {
+            total: 0,
+            Reading: 0,
+            Speaking: 0,
+            Writing: 0,
+            Listening: 0
+        }
+        exam.parts.forEach(part => {
+            part.questions.forEach(q => {
+                if (answers.find(ans => areSameIds(q._id, ans.question))?.score) {
+                    score[part.title] += answers.find(ans => areSameIds(q._id, ans.question))?.score
+                    score.total += answers.find(ans => areSameIds(q._id, ans.question))?.score
+                }
+            })
+        });
+        await ExamTest.findByIdAndUpdate(id, { $set: { score } });
+    } catch (error) {
+        console.error(error);
+        console.log();
+    }
+}
+
 module.exports = {
     list: async (req, res) => {
         try {
@@ -53,6 +85,7 @@ module.exports = {
         try {
             const { id } = req.params;
             let examTest = (await ExamTest.findById(id).populate(populate))
+            let score;
             if (examTest.status === 'testing') {
                 const now = new Date();
                 const testedTime = Math.floor((now.getTime() - new Date(examTest.startedAt).getTime()) / 1000)
@@ -62,13 +95,16 @@ module.exports = {
                 if (testedTime > examTest.timeout) {
                     update.status = 'finished'
                     update.finishedAt = now
+                    update.elapsedTime = 0
+                    score = true
                 } else {
                     update.status = 'paused'
                     update.elapsedTime = examTest.timeout - testedTime
                 }
                 examTest = await ExamTest.findByIdAndUpdate(examTest._id, {
                     $set: update
-                }, { new: true });
+                }, { new: true }).populate(populate);
+                if (score) await scoring(id);
             }
             res.status(200).send(examTest);
         } catch (error) {
@@ -120,6 +156,7 @@ module.exports = {
             });
         }
     },
+   
     finishTesting: async (req, res) => {
         try {
             let examTest = (await ExamTest.findOneAndUpdate({
@@ -129,6 +166,7 @@ module.exports = {
             }, {
                 $set: { finishedAt: new Date(), status: 'finished' }
             }, { new: true }).populate(populate))?.toObject();
+            await scoring(req.params.id);
             if (!examTest) {
                 throw "Not found";
             }

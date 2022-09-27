@@ -6,10 +6,8 @@ var answerSchema = new mongoose.Schema({
     ref: 'User',
     required: true
   },
-  exemTest: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'ExamTest',
-  },
+  examTestId: String,
+  score: Number,
   question: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Question',

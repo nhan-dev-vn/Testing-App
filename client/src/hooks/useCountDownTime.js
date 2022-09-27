@@ -1,9 +1,15 @@
-import React, { useMemo, useState, useRef, useCallback } from 'react';
+import React, { useMemo, useState, useRef, useCallback, useEffect } from 'react';
 import { showCountTime } from '../utils/date';
 
 const useCountDownTime = (from = 0, to = 0, onStop = () => {}) => {
   const [count, setCount] = useState(from);
   const intervalRef = useRef();
+
+  useEffect(() => {
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current)
+    }
+  }, []);
 
   const stop = useCallback(() => {
     clearInterval(intervalRef.current);
@@ -11,6 +17,7 @@ const useCountDownTime = (from = 0, to = 0, onStop = () => {}) => {
   }, [onStop]);
 
   const start = useCallback(() => {
+    if (from === start) return;
     intervalRef.current = setInterval(() => {
       setCount(preCount => {
         const newCount = preCount - 1;
@@ -19,7 +26,7 @@ const useCountDownTime = (from = 0, to = 0, onStop = () => {}) => {
         else return preCount;
       });
     }, 1000);
-  }, [stop, to]);
+  }, [from, stop, to]);
 
   const reset = useCallback((_from) => {
     clearInterval(intervalRef.current);

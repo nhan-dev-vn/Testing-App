@@ -8,7 +8,21 @@ import {
 } from '@mui/material';
 import './style.css';
 
-const Component = ({ progress, status, setStatus, setBlob, start, stop, isCounting }) => {
+export const waitAndGetAudioBlob = () => new Promise((res, rej) => {
+  let audioEl = document.getElementById('audio');
+  const interval = setInterval(() => {
+    console.log('asdf'  , audioEl);
+    if (audioEl) {
+      fetch(audioEl.src)
+        .then(response => {
+          console.log('fetttt');
+          res(response.blob())
+        })
+      clearInterval(interval)
+    }
+  }, 100);
+})
+const Component = ({ progress = 0, status, setStatus, setBlob, start = () => {}, stop = () => {}, isCounting }) => {
   const handleRecorder = useCallback((clearBlobUrl) => () => {
     if (status === 'idle' || status === 'stopped' || status === 'prepare') {
       clearBlobUrl();
