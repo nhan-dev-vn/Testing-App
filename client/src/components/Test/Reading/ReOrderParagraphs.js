@@ -16,12 +16,41 @@ import Footer from '../Footer';
 import VolumeUp from '@mui/icons-material/VolumeUp';
 import ConfirmBox from '../../ConfirmBox';
 import { LABELS } from '../../Question';
+import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
+
+const reorder = (list, startIndex, endIndex) => {
+  const result = Array.from(list);
+  const [removed] = result.splice(startIndex, 1);
+  result.splice(endIndex, 0, removed);
+
+  return result;
+};
+
+const grid = 8;
+
+const getItemStyle = (isDragging, draggableStyle) => ({
+  // some basic styles to make the items look a bit nicer
+  userSelect: "none",
+  padding: grid * 2,
+  margin: `0 0 ${grid * 3}px 0`,
+  border: '1px dashed',
+  // change background colour if dragging
+  background: 'white',
+  borderColor: isDragging ? 'red' : '',
+  // styles we need to apply on draggables
+  ...draggableStyle
+});
+
+const getListStyle = isDraggingOver => ({
+  marginTop: 30
+});
 
 const Component = ({ testId, question, onPause, onNextQ }) => {
   const [confirm, setConfirm] = useState();
   const [submitted, setSubmitted] = useState(false);
   const [text, setText] = useState();
   const [selectedOptionId, setSelectedOptionId] = useState();
+  const [items, setItems] = useState(question.options.map((o, idx) => ({ ...o, id: (idx + 1).toString() })));
   const handleChangeOption = useCallback(e => {
     setSelectedOptionId(e.target.value);
   }, []);
@@ -30,7 +59,7 @@ const Component = ({ testId, question, onPause, onNextQ }) => {
     try {
       await axios.post('/answer', {
         question: question._id,
-        choices: [selectedOptionId],
+        orderParagraphs: items.map(i => parseInt(i.id)),
         examTestId: testId
       });
       setSubmitted(true);
@@ -38,7 +67,7 @@ const Component = ({ testId, question, onPause, onNextQ }) => {
       console.error(error)
       alert('error')
     }
-  }, [question._id, selectedOptionId, testId]);
+  }, [items, question._id, testId]);
 
   const handleOnStopCount = useCallback(async () => {
     await handleSubmit();
@@ -94,38 +123,57 @@ const Component = ({ testId, question, onPause, onNextQ }) => {
     }
   }, [handleSubmit, onPause]);
 
+  const onDragEnd = useCallback((result) => {
+    if (!result) return;
+    setItems(reorder(items, result.source.index, result.destination.index))
+
+  }, [items]);
+
   return (
     <>
-      <Container maxWidth="md" style={{ paddingTop: 30, paddingBottom: 30, flex: 1, display: 'flex', flexDirection: 'column' }}>
-        <Typography className='font-weight-500'>
-          Read the text and answer the question by selecting all the correct responses. More than one response is correct.
-        </Typography>
-        <HtmlContent content={question.question.html} />
-        <Typography color="error">
-          Remain: {showCount}
-        </Typography>
-        <RadioGroup
-          name={question._id}
-          disabled={submitted || count === question.timeout}
-          value={selectedOptionId}
-        >
-          {question.options.map((option, idx) => (
-            <FormControlLabel
-              control={<Radio onClick={handleChangeOption} />}
-              value={option._id}
-              disabled={submitted || count === question.timeout}
-              className="option-container"
-              classes={{ root: 'option-container' }}
-              label={(
-                <div className='selectedOption d-flex align-items-center'>
-                  <span className='font-weight-500 option-idx'>{LABELS[idx]}</span>
-                  <HtmlContent className="option-text" content={option.html} />
+      <Box style={{ paddingTop: 30, paddingBottom: 30, flex: 1, display: 'flex', flexDirection: 'column', overflow: 'auto' }}>
+
+        <Container maxWidth="md" >
+          <Typography className='font-weight-500'>
+            The text boxes in the left panel have been placed in a random order. Restore the original order by dragging the text boxes from the left panel to the right panel.
+          </Typography>
+          <HtmlContent content={question.question.html} />
+          <Typography color="error">
+            Remain: {showCount}
+          </Typography>
+          <DragDropContext onDragEnd={onDragEnd}>
+            <Droppable droppableId="droppable" draggableId="dragable">
+              {(provided, snapshot) => (
+                <div
+                  {...provided.droppableProps}
+                  ref={provided.innerRef}
+                  style={getListStyle(snapshot.isDraggingOver)}
+                >
+                  {items.map((item, index) => (
+                    <Draggable key={item.id} droppableId={item.id} draggableId={item.id} index={index}>
+                      {(provided, snapshot) => (
+                        <div
+                          ref={provided.innerRef}
+                          {...provided.draggableProps}
+                          {...provided.dragHandleProps}
+                          style={getItemStyle(
+                            snapshot.isDragging,
+                            provided.draggableProps.style
+                          )}
+                        >
+                          {item.id}. {item.text}
+                        </div>
+                      )}
+                    </Draggable>
+                  ))}
+                  {provided.placeholder}
                 </div>
               )}
-            />
-          ))}
-        </RadioGroup>
-      </Container>
+            </Droppable>
+          </DragDropContext>
+        </Container>
+      </Box>
+
       <Footer onNextQ={handleNextQ} onSaveAndExit={handleSaveAndExit} />
       {confirm && <ConfirmBox {...confirm} />}
     </>

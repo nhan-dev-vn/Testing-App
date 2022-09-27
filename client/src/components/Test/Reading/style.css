@@ -1,0 +1,49 @@
+.guide {
+  color: rgb(102, 102, 102);
+}
+.re-do {
+  margin-left: 10px !important;
+}
+.over-text {
+  position: absolute !important;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1;
+}
+.MuiSlider-colorPrimary {
+  color: #1976d2 !important;
+}
+.word {
+  display: inline-block;
+  margin-right: 5px;
+  padding: 5px 0;
+}
+div[data-rbd-droppable-id="droppable"] {
+  width: 100% !important
+}
+.droptarget {
+  min-width: 150px;
+  min-height: 30px;
+  border-radius: 3px;
+}
+.droptarget.word {
+  border: 1px solid #eee;
+  background: white;
+
+  transform: translateY(10px);
+}
+.dragtarget {
+  border-radius: 3px;
+  background: #1976d2;
+  color: white;
+  padding: 5px;
+  margin: 5px;
+  cursor: grab;
+}
+.droptarget.word > .dragtarget {
+  position: absolute;
+  top: -5px;
+  left: 50%;
+  transform: translateX(-50%);
+}

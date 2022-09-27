@@ -25,12 +25,14 @@ var questionSchema = new mongoose.Schema({
   type: String, // writing-summarize/writing-essay/speaking-read-aloud
   prepareTimeout: Number,
   timeout: Number,
-  ansType: String, // Multiple Choice/Single Choice/Audio/Text
+  ansType: String, // Multiple Choice/Single Choice/Audio/Text/Texts
   options: [optionSchema],
   score: Number,
   group: {
     type: mongoose.Schema.Types.ObjectId, ref: 'QuestionGroup'
-  }
+  },
+  incorrectWords: [{ index: Number, correctText: String }],
+  missingWords: [{ index: Number, text: String }]
 }, { timestamps: true });
 
 

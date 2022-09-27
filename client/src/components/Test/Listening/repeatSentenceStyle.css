@@ -14,3 +14,12 @@
 .MuiSlider-colorPrimary {
   color: #1976d2 !important;
 }
+.word {
+  display: inline-block;
+  margin-right: 5px;
+  padding: 5px 0;
+}
+.selected-word {
+  background-color: #1976d2;
+  color: #fff;
+}

@@ -18,7 +18,10 @@ var answerSchema = new mongoose.Schema({
     name: String
   },
   text: String,
-  choices: [String]
+  choices: [String],
+  incorrectWords: [{ index: Number, text: String }],
+  missingWords: [{ index: Number, text: String, options: [String] }],
+  orderParagraphs: [Number]
 }, { timestamps: true });
 
 

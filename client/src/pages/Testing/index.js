@@ -20,8 +20,13 @@ import DescribeImage from '../../components/Test/Speaking/DescribeImage';
 import ReTellLecture from '../../components/Test/Speaking/ReTellLecture';
 import SummarizeSpokenText from '../../components/Test/Listening/SummarizeSpokenText';
 import WriteFromDictation from '../../components/Test/Listening/WriteFromDictation';
+import HighlightIncorrectWords from '../../components/Test/Listening/HighlightIncorrectWords';
+import FillInTheBlanks from '../../components/Test/Listening/FillInTheBlanks';
+import ReadingFillInTheBlanks from '../../components/Test/Reading/FillInTheBlanks';
+import ReadingFillInTheBlanksDrop from '../../components/Test/Reading/FillInTheBlanksDrop';
 import SingleChoice from '../../components/Test/Reading/SingleChoice';
 import MultipleChoice from '../../components/Test/Reading/MultipleChoice';
+import ReOrderParagraphs from '../../components/Test/Reading/ReOrderParagraphs';
 // import AnswerShortQuestion from '../../components/Test/Speaking/AnswerShortQuestion';
 // import ReTellLecture from '../../components/Test/Speaking/ReTellLecture';
 // import SummarizeSpokenText from '../../components/Test/Listening/SummarizeSpokenText';
@@ -213,10 +218,15 @@ const Component = () => {
                 {questions[currQIdx].type === 'speaking-re-tell-lecture' && <ReTellLecture testId={examTest._id} question={questions[currQIdx]} onPause={handlePause} onNextQ={handleNextQ} />}
                 {questions[currQIdx].type === 'listening-summarize-spoken-text' && <SummarizeSpokenText testId={examTest._id} question={questions[currQIdx]} onPause={handlePause} onNextQ={handleNextQ} />}
                 {questions[currQIdx].type === 'listening-write-from-dictation' && <WriteFromDictation testId={examTest._id} question={questions[currQIdx]} onPause={handlePause} onNextQ={handleNextQ} />}
+                {questions[currQIdx].type === 'listening-highlight-incorrect-words' && <HighlightIncorrectWords testId={examTest._id} question={questions[currQIdx]} onPause={handlePause} onNextQ={handleNextQ} />}
+                {questions[currQIdx].type === 'listening-fill-in-the-blanks' && <FillInTheBlanks testId={examTest._id} question={questions[currQIdx]} onPause={handlePause} onNextQ={handleNextQ} />}
+                {questions[currQIdx].type === 'reading-fill-in-the-blanks' && <ReadingFillInTheBlanks testId={examTest._id} question={questions[currQIdx]} onPause={handlePause} onNextQ={handleNextQ} />}
                 {questions[currQIdx].type === 'writing-essay' && <WriteEssay testId={examTest._id} question={questions[currQIdx]} onPause={handlePause} onNextQ={handleNextQ} />}
                 {questions[currQIdx].type === 'writing-summarize' && <SummarizeWrittenText testId={examTest._id} question={questions[currQIdx]} onPause={handlePause} onNextQ={handleNextQ} />}
                 {questions[currQIdx].type === 'reading-single-choice' && <SingleChoice testId={examTest._id} question={questions[currQIdx]} onPause={handlePause} onNextQ={handleNextQ} />}
                 {questions[currQIdx].type === 'reading-multiple-choice' && <MultipleChoice testId={examTest._id} question={questions[currQIdx]} onPause={handlePause} onNextQ={handleNextQ} />}
+                {questions[currQIdx].type === 'reading-re-order-paragraphs' && <ReOrderParagraphs testId={examTest._id} question={questions[currQIdx]} onPause={handlePause} onNextQ={handleNextQ} />}
+                {questions[currQIdx].type === 'reading-fill-in-the-blanks-drop' && <ReadingFillInTheBlanksDrop testId={examTest._id} question={questions[currQIdx]} onPause={handlePause} onNextQ={handleNextQ} />}
                 {/* {question.type === 'speaking-answer-short-question' && <AnswerShortQuestion question={question} reload={reload} />}
                         {question.type === 'speaking-re-tell-lecture' && <ReTellLecture question={question} reload={reload} />}
                         {question.type === 'listening-summarize-spoken-text' && <SummarizeSpokenText question={question} reload={reload} />}

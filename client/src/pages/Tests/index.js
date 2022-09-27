@@ -24,6 +24,7 @@ import ConfirmBox from '../../components/ConfirmBox';
 
 export default function Component() {
   const { user } = useSelector(state => state.auth);
+  const isAdmin = user.email === 'admin@gmail.com'
   const [exams, setExams] = useState([]);
   const [myExamTests, setMyExamTests] = useState([]);
   const [examTests, setExamTests] = useState([]);
