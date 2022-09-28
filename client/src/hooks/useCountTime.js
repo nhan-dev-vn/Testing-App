@@ -12,10 +12,10 @@ const useCountTime = (from = 0, to = 0, onStop = () => {}) => {
     }
   }, []);
 
-  const stop = useCallback(() => {
+  const stop = useCallback((notCallOnStop) => {
     clearInterval(intervalRef.current);
     setIsCounting(false);
-    onStop();
+    if (!notCallOnStop) onStop();
   }, [onStop]);
 
   const start = useCallback(() => {

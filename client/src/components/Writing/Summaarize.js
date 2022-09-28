@@ -4,7 +4,7 @@ import {
 } from '@mui/material';
 import useCountDownTime from '../../hooks/useCountDownTime';
 import HtmlContent from '../HtmlContent';
-import './summarizeStyle.css';
+import './style.css';
 import axios from '../../utils/axios';
 
 const Component = ({ question, reload }) => {

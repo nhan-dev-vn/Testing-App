@@ -41,7 +41,7 @@ const Component = ({ testId, question, onPause, onNextQ }) => {
   }, [question._id, selectedOptionId, testId]);
 
   const handleOnStopCount = useCallback(async () => {
-    await handleSubmit();
+    handleSubmit();
     setConfirm({
       onFinish: () => setConfirm(undefined),
       description: 'Please click "Next" to go to the next.',
@@ -63,7 +63,7 @@ const Component = ({ testId, question, onPause, onNextQ }) => {
         description: 'Are you sure if you want to finish answering this question and go to the next.',
         confirmAction: async () => {
           try {
-            await handleSubmit();
+            handleSubmit();
             onNextQ();
           } catch (err) {
             console.error(err)
@@ -80,14 +80,8 @@ const Component = ({ testId, question, onPause, onNextQ }) => {
 
   const handleSaveAndExit = useCallback(async () => {
     try {
-      setConfirm({
-        description: 'Are you sure to save and exit test?',
-        onFinish: () => setConfirm(undefined),
-        confirmAction: async () => {
-          await handleSubmit();
-          onPause();
-        }
-      })
+      handleSubmit();
+      onPause();
     } catch (error) {
       console.error(error)
       alert('error')
@@ -96,36 +90,40 @@ const Component = ({ testId, question, onPause, onNextQ }) => {
 
   return (
     <>
-      <Container maxWidth="md" style={{ paddingTop: 30, paddingBottom: 30, flex: 1, display: 'flex', flexDirection: 'column' }}>
-        <Typography className='font-weight-500'>
-          Read the text and answer the question by selecting all the correct responses. More than one response is correct.
-        </Typography>
-        <HtmlContent content={question.question.html} />
-        <Typography color="error">
-          Remain: {showCount}
-        </Typography>
-        <RadioGroup
-          name={question._id}
-          disabled={submitted || count === question.timeout}
-          value={selectedOptionId}
-        >
-          {question.options.map((option, idx) => (
-            <FormControlLabel
-              control={<Radio onClick={handleChangeOption} />}
-              value={option._id}
-              disabled={submitted || count === question.timeout}
-              className="option-container"
-              classes={{ root: 'option-container' }}
-              label={(
-                <div className='selectedOption d-flex align-items-center'>
-                  <span className='font-weight-500 option-idx'>{LABELS[idx]}</span>
-                  <HtmlContent className="option-text" content={option.html} />
-                </div>
-              )}
-            />
-          ))}
-        </RadioGroup>
-      </Container>
+      <Box style={{ paddingTop: 30, paddingBottom: 30, flex: 1, display: 'flex', flexDirection: 'column', overflow: 'auto' }}>
+        <Container maxWidth="md">
+          <Typography className='font-weight-500'>
+            {question.guide}
+          </Typography>
+          <HtmlContent content={question.question.html} />
+          <Typography color="error">
+            Remain: {showCount}
+          </Typography>
+          <Box>
+            <RadioGroup
+              name={question._id}
+              disabled={submitted}
+              value={selectedOptionId}
+            >
+              {question.options.map((option, idx) => (
+                <FormControlLabel
+                  control={<Radio onClick={handleChangeOption} />}
+                  value={option._id}
+                  disabled={submitted}
+                  className="option-container"
+                  classes={{ root: 'option-container' }}
+                  label={(
+                    <div className='selectedOption d-flex align-items-center'>
+                      <span className='font-weight-500 option-idx'>{LABELS[idx]}</span>
+                      <HtmlContent className="option-text" content={option.html} />
+                    </div>
+                  )}
+                />
+              ))}
+            </RadioGroup>
+          </Box>
+        </Container>
+      </Box>
       <Footer onNextQ={handleNextQ} onSaveAndExit={handleSaveAndExit} />
       {confirm && <ConfirmBox {...confirm} />}
     </>

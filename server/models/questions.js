@@ -21,6 +21,7 @@ var questionSchema = new mongoose.Schema({
       url: String
     }]
   },
+  guide: String,
   name: String,
   type: String, // writing-summarize/writing-essay/speaking-read-aloud
   prepareTimeout: Number,

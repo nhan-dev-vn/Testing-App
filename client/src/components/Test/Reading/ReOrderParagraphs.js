@@ -70,7 +70,7 @@ const Component = ({ testId, question, onPause, onNextQ }) => {
   }, [items, question._id, testId]);
 
   const handleOnStopCount = useCallback(async () => {
-    await handleSubmit();
+    handleSubmit();
     setConfirm({
       onFinish: () => setConfirm(undefined),
       description: 'Please click "Next" to go to the next.',
@@ -92,7 +92,7 @@ const Component = ({ testId, question, onPause, onNextQ }) => {
         description: 'Are you sure if you want to finish answering this question and go to the next.',
         confirmAction: async () => {
           try {
-            await handleSubmit();
+            handleSubmit();
             onNextQ();
           } catch (err) {
             console.error(err)
@@ -109,14 +109,8 @@ const Component = ({ testId, question, onPause, onNextQ }) => {
 
   const handleSaveAndExit = useCallback(async () => {
     try {
-      setConfirm({
-        description: 'Are you sure to save and exit test?',
-        onFinish: () => setConfirm(undefined),
-        confirmAction: async () => {
-          await handleSubmit();
-          onPause();
-        }
-      })
+      handleSubmit();
+      onPause();
     } catch (error) {
       console.error(error)
       alert('error')
@@ -132,10 +126,9 @@ const Component = ({ testId, question, onPause, onNextQ }) => {
   return (
     <>
       <Box style={{ paddingTop: 30, paddingBottom: 30, flex: 1, display: 'flex', flexDirection: 'column', overflow: 'auto' }}>
-
         <Container maxWidth="md" >
           <Typography className='font-weight-500'>
-            The text boxes in the left panel have been placed in a random order. Restore the original order by dragging the text boxes from the left panel to the right panel.
+            {question.guide}
           </Typography>
           <HtmlContent content={question.question.html} />
           <Typography color="error">

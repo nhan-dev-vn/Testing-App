@@ -1,122 +1,149 @@
 /* eslint-disable no-use-before-define */
 import React, { useState, useCallback, useEffect } from 'react';
 import {
-  Box, Typography, TextareaAutosize, Button, IconButton
+  Box, Typography, Slider, Button, IconButton, Container, alertClasses
 } from '@mui/material';
 import useCountDownTime from '../../../hooks/useCountDownTime';
 import useCountTime from '../../../hooks/useCountTime';
 import HtmlContent from '../../HtmlContent';
-import './readAloudStyle.css';
+import './style.css';
 import axios from '../../../utils/axios';
-import VolumeUpIcon from '@mui/icons-material/VolumeUp';
-import VolumeUpOutlinedIcon from '@mui/icons-material/VolumeUpOutlined';
-import Recorder from '../../../components/Recorder';
+import Footer from '../Footer';
+import ConfirmBox from '../../ConfirmBox';
 
-const Component = ({ question, reload }) => {
-  const [enableSubmit, setEnableSubmit] = useState(false);
-  const [blob, setBlob] = useState();
+import { useDispatch, useSelector } from 'react-redux';
+import { actions as audioAct } from '../../../redux/audioSlice';
+
+const Component = ({ testId, question, onPause, onNextQ }) => {
+  const [confirm, setConfirm] = useState();
   const [submitted, setSubmitted] = useState(false);
   const [status, setStatus] = useState('prepare');
-  const [playDemo, setPlayDemo] = useState(false);
+  const dispatch = useDispatch();
+  const { blob } = useSelector(state => state.audio);
+  const [callbackSubmit, setCallbackSubmit] = useState('');
 
-  const handleOnStopCount = useCallback(() => {
-    setTimeout(() => {
-      document.getElementById('stop-record').click();
-      setStatus('stopped');
-    }, 1000);
+  const handleSubmit = useCallback(async (_blob) => {
+    try {
+      if (submitted || !_blob) return;
+      const fd = new FormData();
+      fd.append('question', question._id);
+      fd.append('audio', _blob);
+      fd.append('examTestId', testId);
+      await axios.post('/answer/audio', fd);
+      setSubmitted(true);
+    } catch (error) {
+      console.error(error)
+      alert('error')
+    }
+  }, [question._id, submitted, testId]);
+
+  useEffect(() => {
+    if (blob) {
+      handleSubmit(blob);
+      dispatch(audioAct.setAudioBlob())
+      if (callbackSubmit === 'nextQ') onNextQ();
+      if (callbackSubmit === 'exit') onPause();
+      if (callbackSubmit === 'autoNextQ')
+        setConfirm({
+          onFinish: () => setConfirm(undefined),
+          description: 'Please click "Next" to go to the next.',
+          disabledCancel: true,
+          confirmText: 'Next',
+          confirmAction: onNextQ
+        });
+    }
+  }, [blob, callbackSubmit, dispatch, handleSubmit, onNextQ, onPause]);
+
+  const handleOnStopCount = useCallback(async () => {
+    document.getElementById('stop-record').click();
+    setStatus('complete');
+    setCallbackSubmit('autoNextQ');
   }, []);
 
-  const { isCounting, count, showCount, start, reset, stop } = useCountTime(0, question.timeout, handleOnStopCount);
+  const { count, start, stop } = useCountTime(0, question.timeout, handleOnStopCount);
 
-  const startRecord = useCallback(() => {
-    setSubmitted(false);
+  const handleOnStopPrepareCount = useCallback(async () => {
     document.getElementById('start-record').click();
     start();
     setStatus('recording');
   }, [start]);
 
-  const stopRecord = useCallback(() => {
-    document.getElementById('stop-record').click();
-    stop();
-    setStatus('stopped');
-  }, [stop]);
-
-  const handleOnStopPrepareCount = useCallback(() => {
-    if (status === 'prepare') startRecord();
-  }, [startRecord, status]);
-
-  const { count: prepareCount, showCount: showPrepareCount, start: startPrepare, reset: resetPrepare, stop: stopPrepare } = useCountDownTime(question.prepareTimeout, 0);
-
-  useEffect(() => {
-    if (prepareCount === 0) handleOnStopPrepareCount();
-  }, [handleOnStopPrepareCount, prepareCount]);
+  const { count: prepareCount, start: startPrepare } = useCountDownTime(question.prepareTimeout, 0, handleOnStopPrepareCount);
 
   useEffect(() => {
     startPrepare();
   }, []);
 
-  const handleRedo = useCallback(() => {
-    startRecord();
-  }, [startRecord]);
-
-  const handleSubmit = useCallback(async () => {
+  const handleNextQ = useCallback(async () => {
     try {
-      const fd = new FormData();
-      fd.append('question', question._id);
-      fd.append('audio', blob);
-      await axios.post('/answer/audio', fd);
-      setSubmitted(true);
-      setEnableSubmit(false);
-      reload();
+      if (!status) {
+        setConfirm({
+          description: 'You need to finish answering this question before going to the next.',
+          disabledCancel: true,
+          confirmText: 'OK',
+          onFinish: () => setConfirm(undefined)
+        })
+      } else {
+        setConfirm({
+          onFinish: () => setConfirm(undefined),
+          description: 'Are you sure if you want to finish answering this question and go to the next.',
+          confirmAction: async () => {
+            try {
+              document.getElementById('stop-record').click();
+              stop(true);
+              setCallbackSubmit('nextQ');
+            } catch (err) {
+              console.error(err)
+              alert('error')
+            }
+          }
+        })
+      }
     } catch (error) {
+      console.error(error)
       alert('error')
     }
-  }, [question._id, blob, reload]);
+  }, [status, stop]);
 
-  const handleClickPlayDemo = useCallback(() => {
-    const audio = document.getElementById('demo-audio');
-    setPlayDemo(prev => {
-      if (prev) {
-        audio.pause(); 
-        audio.currentTime = 0;
-      } else audio.play();
-      return !prev;
-    });
-  }, []);
-
-  useEffect(() => {
-    setEnableSubmit(blob);
-  }, [blob]);
+  const handleSaveAndExit = useCallback(async () => {
+    try {
+      document.getElementById('stop-record').click();
+      stop(true);
+      if (status === 'recording' || status === 'complete') setCallbackSubmit('exit');
+      else onPause();
+    } catch (error) {
+      console.error(error)
+      alert('error')
+    }
+  }, [onPause, status, stop]);
 
   return (
-    <Box p={3}>
-      <Typography className="guide">
-        <Typography variant="h5">Read Aloud</Typography>
-        Look at the text below. In 40 seconds, you must read this text aloud as naturally and clearly as possible. You have 40 seconds to read aloud.
-      </Typography>
-      <Box py={1} />
-      <Typography># {question.name}</Typography>
-      <Box py={1} />
-      <Typography color="error">
-        {status === 'prepare' ? 'Prepare' : 'Time'}: {status === 'prepare' ? showPrepareCount : showCount}
-      </Typography>
-      <Box py={1} />
-      <Box p={2} border="1px dashed #ddd" position="relative" style={{ background: '#fff' }}>
-        <HtmlContent content={question.question.html} />
-        <audio src={question.question.audioUrl} style={{ display: 'none' }} id="demo-audio" />
-        <IconButton color="primary" onClick={handleClickPlayDemo} style={{ position: 'absolute', right: 10, bottom: 10 }}>
-          {playDemo && <VolumeUpIcon />}
-          {!playDemo && <VolumeUpOutlinedIcon />}
-        </IconButton>
+    <>
+      <Box style={{ paddingTop: 30, paddingBottom: 30, flex: 1, display: 'flex', flexDirection: 'column', overflow: 'auto' }}>
+        <Container maxWidth="md" style={{}}>
+          <Typography className='font-weight-500'>
+            {question.guide}
+          </Typography>
+          <Box display="flex" flexDirection="column" alignItems="center">
+            <Box style={{ border: '1.5px solid #ccc', width: 320, maxWidth: '100%', background: '#eaf1fb' }} p={3} py={4} m={2}>
+              <Typography className='font-weight-500' textAlign="center">Recorded Answer</Typography>
+              <Typography>Current Status:</Typography>
+              <Typography>
+                {status === 'prepare' && `Recording in ${prepareCount} seconds`}
+                {status === 'recording' && "Recording"}
+                {status === 'complete' && "Complete"}
+              </Typography>
+              <Box display="flex" alignItems="center" pt={2}>
+                <Slider color="primary" value={count / question.timeout * 100} disabled />
+              </Box>
+            </Box>
+            <HtmlContent content={question.question.html} />
+          </Box>
+        </Container>
       </Box>
-      <Box py={1} />
-      <Recorder status={status} setStatus={setStatus} setBlob={setBlob} progress={count / question.timeout * 100} start={startRecord} stop={stopRecord}  />
-      <Box py={1} />
-      <Box py={1}>
-        <Button variant="contained" disabled={!enableSubmit} color={enableSubmit ? 'primary' : 'inherit'} onClick={handleSubmit}>Submit</Button>
-        <Button variant="contained" color="primary" onClick={handleRedo} className="re-do">Re-do</Button>
-      </Box>
-    </Box>
+      <Footer onNextQ={handleNextQ} onSaveAndExit={handleSaveAndExit} />
+      {confirm && <ConfirmBox {...confirm} />}
+    </>
   );
 };
 

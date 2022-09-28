@@ -27,7 +27,7 @@ const Component = ({ testId, question, onPause, onNextQ }) => {
     setChoices(prev => {
       let _new = [...prev];
       if (idx === 'options') _new = _new.filter(c => c.text !== value);
-      if (!prev.find(c => c.index === idx || c.text === value )) _new = _new.concat([{ index: idx, text: value }])
+      if (!prev.find(c => c.index === idx || c.text === value)) _new = _new.concat([{ index: idx, text: value }])
       else _new = _new.map(c => c.index !== idx && c.text !== value ? c : { index: idx, text: value });
       return _new
     })
@@ -48,7 +48,7 @@ const Component = ({ testId, question, onPause, onNextQ }) => {
   }, [choices, question._id, testId]);
 
   const handleOnStopCount = useCallback(async () => {
-    await handleSubmit();
+    handleSubmit();
     setConfirm({
       onFinish: () => setConfirm(undefined),
       description: 'Please click "Next" to go to the next.',
@@ -70,7 +70,7 @@ const Component = ({ testId, question, onPause, onNextQ }) => {
         description: 'Are you sure if you want to finish answering this question and go to the next.',
         confirmAction: async () => {
           try {
-            await handleSubmit();
+            handleSubmit();
             onNextQ();
           } catch (err) {
             console.error(err)
@@ -87,14 +87,8 @@ const Component = ({ testId, question, onPause, onNextQ }) => {
 
   const handleSaveAndExit = useCallback(async () => {
     try {
-      setConfirm({
-        description: 'Are you sure to save and exit test?',
-        onFinish: () => setConfirm(undefined),
-        confirmAction: async () => {
-          await handleSubmit();
-          onPause();
-        }
-      })
+      handleSubmit();
+      onPause();
     } catch (error) {
       console.error(error)
       alert('error')
@@ -121,7 +115,7 @@ const Component = ({ testId, question, onPause, onNextQ }) => {
       <Box style={{ paddingTop: 30, paddingBottom: 30, flex: 1, display: 'flex', flexDirection: 'column', overflow: 'auto' }}>
         <Container maxWidth="md" >
           <Typography className='font-weight-500'>
-            In the text below some words are missing. Drag words from the box below to the appropriate place in the text. To undo an answer choice, drag the word back to the box below the text.
+            {question.guide}
           </Typography>
           <HtmlContent content={question.question.html} />
           <Typography color="error" style={{ marginTop: 20, marginBottom: 10 }}>
@@ -130,17 +124,20 @@ const Component = ({ testId, question, onPause, onNextQ }) => {
           <Box width="100%" border="1px solid #ccc" borderRadius={1} >
             <Box padding={2}>
 
-            {question.question.text.split(' ').map((w, i) => {
-              if (w === '\n') return <br />;
-              if (w === '{{drop}}') return (
-                <span data-index={i} className='word droptarget' onDrop={onDrop} id={i} onDragOver={onDragOver}>
+              {question.question.text.split(' ').map((w, i) => {
+                if (w === '\n') return <br />;
+                if (w.includes('{{drop}}')) return (
+                  <>
+                  <span data-index={i} className='word droptarget' onDrop={onDrop} id={i} onDragOver={onDragOver}>
 
-                </span>
-              )
-              return (
-                <span data-index={i} className={`word `}>{w}</span>
-              );
-            })}
+                  </span>
+                  {w.replace('{{drop}}', '')}
+                  </>
+                )
+                return (
+                  <span data-index={i} className={`word `}>{w}</span>
+                );
+              })}
             </Box>
             <Box className='droptarget' id="options" onDrop={onDrop} onDragOver={onDragOver} mt={3} borderTop="1px solid #ccc" p={2} style={{ background: '#eee' }}>
               {question.options.map(o => (

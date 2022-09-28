@@ -9,7 +9,7 @@ const Component = ({ examTest, elapsedTime, currQIdx, totalQ }) => {
     <Box id="testing-header-container">
     <Container maxWidth="md" id="testing-header">
       <h3 style={{ margin: '0.5em' }}>{examTest.title}</h3>
-      <Box width={130}>
+      <Box width={150}>
         <Typography className='d-flex align-items-center'>
           <AccessTimeIcon style={{ marginRight: 5 }} /> {examTest.status === 'testing' ? elapsedTime : showCountTime(examTest.elapsedTime)} / {showCountTime(examTest.timeout)}
         </Typography>

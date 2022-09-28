@@ -6,7 +6,7 @@ import {
 import useCountDownTime from '../../../hooks/useCountDownTime';
 import useCountTime from '../../../hooks/useCountTime';
 import HtmlContent from '../../HtmlContent';
-import './repeatSentenceStyle.css';
+import './style.css';
 import axios from '../../../utils/axios';
 import VolumeUpIcon from '@mui/icons-material/VolumeUp';
 import VolumeUpOutlinedIcon from '@mui/icons-material/VolumeUpOutlined';
@@ -16,16 +16,20 @@ import Footer from '../Footer';
 import VolumeUp from '@mui/icons-material/VolumeUp';
 import ConfirmBox from '../../ConfirmBox';
 
-import { waitAndGetAudioBlob } from '../../../pages/Testing'
+import { useDispatch, useSelector } from 'react-redux';
+import { actions as audioAct } from '../../../redux/audioSlice';
 
 const Component = ({ testId, question, onPause, onNextQ }) => {
   const [confirm, setConfirm] = useState();
   const [submitted, setSubmitted] = useState(false);
   const [status, setStatus] = useState('prepare');
+  const dispatch = useDispatch();
+  const { blob } = useSelector(state => state.audio);
+  const [callbackSubmit, setCallbackSubmit] = useState('');
 
   const handleSubmit = useCallback(async (_blob) => {
     try {
-      if (submitted) return;
+      if (submitted || !_blob) return;
       const fd = new FormData();
       fd.append('question', question._id);
       fd.append('audio', _blob);
@@ -38,25 +42,35 @@ const Component = ({ testId, question, onPause, onNextQ }) => {
     }
   }, [question._id, submitted, testId]);
 
+  useEffect(() => {
+    if (blob) {
+      handleSubmit(blob);
+      dispatch(audioAct.setAudioBlob())
+      if (callbackSubmit === 'nextQ') onNextQ();
+      if (callbackSubmit === 'exit') onPause();
+      if (callbackSubmit === 'autoNextQ')
+        setConfirm({
+          onFinish: () => setConfirm(undefined),
+          description: 'Please click "Next" to go to the next.',
+          disabledCancel: true,
+          confirmText: 'Next',
+          confirmAction: onNextQ
+        });
+    }
+  }, [blob, callbackSubmit, dispatch, handleSubmit, onNextQ, onPause]);
+
   const handleOnStopCount = useCallback(async () => {
     document.getElementById('stop-record').click();
     setStatus('complete');
-    const _blob = await waitAndGetAudioBlob();
-    await handleSubmit(_blob);
-    setConfirm({
-      onFinish: () => setConfirm(undefined),
-      description: 'Please click "Next" to go to the next.',
-      disabledCancel: true,
-      confirmText: 'Next',
-      confirmAction: onNextQ
-    });
-  }, [handleSubmit, onNextQ]);
+    setCallbackSubmit('autoNextQ');
+  }, []);
 
   const { count, start, stop } = useCountTime(0, question.timeout, handleOnStopCount);
 
   const handleOnStopPrepareCount = useCallback(async () => {
     start();
     setStatus('recording');
+    document.getElementById('start-record').click();
   }, [start]);
 
   const { count: prepareCount, start: startPrepare } = useCountDownTime(question.prepareTimeout, 0, handleOnStopPrepareCount);
@@ -81,9 +95,8 @@ const Component = ({ testId, question, onPause, onNextQ }) => {
           confirmAction: async () => {
             try {
               document.getElementById('stop-record').click();
-              const _blob = await waitAndGetAudioBlob();
-              await handleSubmit(_blob);
-              onNextQ();
+              stop(true);
+              setCallbackSubmit('nextQ');
             } catch (err) {
               console.error(err)
               alert('error')
@@ -95,35 +108,26 @@ const Component = ({ testId, question, onPause, onNextQ }) => {
       console.error(error)
       alert('error')
     }
-  }, [handleSubmit, onNextQ, status]);
+  }, [status, stop]);
 
   const handleSaveAndExit = useCallback(async () => {
     try {
-      if (!status) {
-        setConfirm({
-          onFinish: () => setConfirm(undefined),
-          description: 'You need to finish answering this question before going to the next.',
-          disabledCancel: true,
-          confirmText: 'OK',
-        })
-        return;
-      }
       document.getElementById('stop-record').click();
-      const _blob = await waitAndGetAudioBlob();
-      await handleSubmit(_blob);
-      await onPause();
+      stop(true);
+      if (status === 'recording' || status === 'complete') setCallbackSubmit('exit');
+      else onPause();
     } catch (error) {
       console.error(error)
       alert('error')
     }
-  }, [handleSubmit, onPause, status]);
+  }, [onPause, status, stop]);
 
   return (
     <>
       <Box style={{ paddingTop: 30, paddingBottom: 30, flex: 1, display: 'flex', flexDirection: 'column', overflow: 'auto' }}>
         <Container maxWidth="md" style={{}}>
           <Typography className='font-weight-500'>
-            Look at the graph below. In 25 seconds, please speak into the microphone and describe in detail what the graph is showing. You will have 40 seconds to give your response.
+            {question.guide}
           </Typography>
           <Box display="flex" flexDirection="column" alignItems="center">
 

@@ -6,7 +6,7 @@ import {
 import useCountDownTime from '../../../hooks/useCountDownTime';
 import useCountTime from '../../../hooks/useCountTime';
 import HtmlContent from '../../HtmlContent';
-import './repeatSentenceStyle.css';
+import './style.css';
 import axios from '../../../utils/axios';
 import VolumeUpIcon from '@mui/icons-material/VolumeUp';
 import VolumeUpOutlinedIcon from '@mui/icons-material/VolumeUpOutlined';
@@ -47,7 +47,7 @@ const Component = ({ testId, question, onPause, onNextQ }) => {
 
   const handleOnStopCount = useCallback(async () => {
     setStatus('complete');
-    await handleSubmit();
+    handleSubmit();
     setConfirm({
       description: 'Please click "Next" to go to the next.',
       disabledCancel: true,
@@ -102,7 +102,7 @@ const Component = ({ testId, question, onPause, onNextQ }) => {
           description: 'Are you sure if you want to finish answering this question and go to the next.',
           confirmAction: async () => {
             try {
-              await handleSubmit();
+              handleSubmit();
               onNextQ();
             } catch (err) {
               console.error(err)
@@ -120,59 +120,52 @@ const Component = ({ testId, question, onPause, onNextQ }) => {
 
   const handleSaveAndExit = useCallback(async () => {
     try {
-      if (demoStatus !== 'complete') {
-        setConfirm({
-          description: 'You need to finish answering this question before going to the next.',
-          disabledCancel: true,
-          confirmText: 'OK',
-          onFinish: () => setConfirm(undefined)
-        })
-        return;
-      }
-      await handleSubmit();
+      handleSubmit();
       onPause();
     } catch (error) {
       console.error(error)
       alert('error')
     }
-  }, [demoStatus, handleSubmit, onPause]);
+  }, [handleSubmit, onPause]);
 
   return (
     <>
-      <Container maxWidth="md" style={{ paddingTop: 30, paddingLeft: 30, flex: 1, display: 'flex', flexDirection: 'column' }}>
-        <Typography className='font-weight-500'>
-        You will hear a recording. Below is a transcription of the recording. Some words in the transcription differ from what the speaker said. Please click on the words that are different.
-        </Typography>
-        <Box display="flex" flexDirection="column" alignItems="center">
-          <Box style={{ border: '1.5px solid #ccc', width: 320, maxWidth: '100%' }} p={3} py={4} m={2}>
-            <Typography>Current Status:</Typography>
-            <Typography>
-              {demoStatus === 'prepare' && `Start in ${prepareCount}s`}
-              {demoStatus === 'playing' && "Playing"}
-              {demoStatus === 'complete' && "Complete"}
+      <Box style={{ paddingTop: 30, paddingBottom: 30, flex: 1, display: 'flex', flexDirection: 'column', overflow: 'auto' }}>
+        <Container maxWidth="md">
+          <Typography className='font-weight-500'>
+            {question.guide}
+          </Typography>
+          <Box display="flex" flexDirection="column" alignItems="center">
+            <Box style={{ border: '1.5px solid #ccc', width: 320, maxWidth: '100%' }} p={3} py={4} m={2}>
+              <Typography>Current Status:</Typography>
+              <Typography>
+                {demoStatus === 'prepare' && `Start in ${prepareCount}s`}
+                {demoStatus === 'playing' && "Playing"}
+                {demoStatus === 'complete' && "Complete"}
+              </Typography>
+              <Box display="flex" alignItems="center" pt={2}>
+                <Slider color="primary" value={currPlaying} disabled />
+                <IconButton style={{ marginLeft: 20 }}>
+                  <VolumeUp />
+                </IconButton>
+                <audio src={question.question.audioUrl} onPlay={handleDemoStart} onEnded={handleDemoEnded} onTimeUpdate={handleTimeDemoChange} id="demo-audio" style={{ display: 'none' }} />
+              </Box>
+            </Box>
+            <Typography color="error" style={{ margin: '10px' }}>
+              {status === 'testing' && `Remain: ${showCount}`}
+              {status === 'complete' && "Complete"}
             </Typography>
-            <Box display="flex" alignItems="center" pt={2}>
-              <Slider color="primary" value={currPlaying} disabled />
-              <IconButton style={{ marginLeft: 20 }}>
-                <VolumeUp />
-              </IconButton>
-              <audio src={question.question.audioUrl} onPlay={handleDemoStart} onEnded={handleDemoEnded} onTimeUpdate={handleTimeDemoChange} id="demo-audio" style={{ display: 'none' }} />
+            <Box width="100%">
+              {question.question.text.split(' ').map((w, i) => {
+                if (w === '\n') return <br />;
+                return (
+                  <span data-index={i} className={`cursor-pointer word ${words.find(_w => _w.index === i) ? 'selected-word' : ''}`} onClick={() => handleChangeWords(w, i)}>{w}</span>
+                );
+              })}
             </Box>
           </Box>
-          <Typography color="error" style={{ margin: '10px' }}>
-            {status === 'testing' && `Remain: ${showCount}`}
-            {status === 'complete' && "Complete"}
-          </Typography>
-          <Box width="100%">
-            {question.question.text.split(' ').map((w, i) => {
-              if (w === '\n') return <br />;
-              return (
-                <span data-index={i} className={`cursor-pointer word ${words.find(_w => _w.index === i) ? 'selected-word' : ''}`}  onClick={() => handleChangeWords(w, i) }>{w}</span>
-              );
-            })}
-          </Box>
-        </Box>
-      </Container>
+        </Container>
+      </Box>
       <Footer onNextQ={handleNextQ} onSaveAndExit={handleSaveAndExit} />
       {confirm && <ConfirmBox {...confirm} />}
     </>

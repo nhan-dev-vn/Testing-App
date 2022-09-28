@@ -1,7 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import Question from '../../components/Question';
-import QuestionGroup from '../../components/QuestionGroup';
 import Loading from '../Loading';
 import './style.css'
 import axios from '../../utils/axios';
@@ -10,49 +8,50 @@ import { Box } from '@mui/material';
 import useCountDownTime from '../../hooks/useCountDownTime';
 import ConfirmBox from '../../components/ConfirmBox';
 import { ReactMediaRecorder } from "react-media-recorder";
+import { useDispatch } from 'react-redux';
+
+import { actions as audioAct } from '../../redux/audioSlice';
+
 import WriteEssay from '../../components/Test/Writing/WriteEssay';
 import SummarizeWrittenText from '../../components/Test/Writing/SummarizeWrittenText';
-// import ReadAloud from '../../components/Test/Speaking/ReadAloud';
-// import DescribeImage from '../../components/Test/Speaking/DescribeImage';
+
+import ReadAloud from '../../components/Test/Speaking/ReadAloud';
 import RepeatSentence from '../../components/Test/Speaking/RepeatSentence';
 import AnswerShortQuestion from '../../components/Test/Speaking/AnswerShortQuestion';
 import DescribeImage from '../../components/Test/Speaking/DescribeImage';
 import ReTellLecture from '../../components/Test/Speaking/ReTellLecture';
+
 import SummarizeSpokenText from '../../components/Test/Listening/SummarizeSpokenText';
 import WriteFromDictation from '../../components/Test/Listening/WriteFromDictation';
 import HighlightIncorrectWords from '../../components/Test/Listening/HighlightIncorrectWords';
 import FillInTheBlanks from '../../components/Test/Listening/FillInTheBlanks';
+import ListeningMultipleChoice from '../../components/Test/Listening/MultipleChoice';
+import ListeningSingleChoice from '../../components/Test/Listening/SingleChoice';
+
 import ReadingFillInTheBlanks from '../../components/Test/Reading/FillInTheBlanks';
 import ReadingFillInTheBlanksDrop from '../../components/Test/Reading/FillInTheBlanksDrop';
 import SingleChoice from '../../components/Test/Reading/SingleChoice';
 import MultipleChoice from '../../components/Test/Reading/MultipleChoice';
 import ReOrderParagraphs from '../../components/Test/Reading/ReOrderParagraphs';
-// import AnswerShortQuestion from '../../components/Test/Speaking/AnswerShortQuestion';
-// import ReTellLecture from '../../components/Test/Speaking/ReTellLecture';
-// import SummarizeSpokenText from '../../components/Test/Listening/SummarizeSpokenText';
-// import WriteFromDictation from '../../components/Test/Listening/WriteFromDictation';
-// import ListeningSingleChoice from '../../components/Test/Listening/SingleChoice';
-// import ListeningMultipleChoice from '../../components/Test/Listening/MultipleChoice'
-// import HighlightCorrectSummary from '../../components/Test/Listening/HighlightCorrectSummary';
-// import SelectMissingWord from '../../components/Test/Listening/SelectMissingWord';
-// import ReadingSingleChoice from '../../components/Test/Reading/SingleChoice';
-// import ReadingMultipleChoice from '../../components/Test/Reading/MultipleChoice';
 
-
-export const waitAndGetAudioBlob = () => new Promise((res, rej) => {
-    let audioEl = document.getElementById('audio');
-   
-      if (audioEl) {
-        fetch(audioEl.src)
-          .then(response => {
-            console.log('fetttt');
-            res(response.blob())
-          })
-      }
-  })
+export const waitAndGetAudioBlob = async () => {
+    let src;
+    // while(!src) {
+    //     let audioEl = document.getElementById('audio');
+    //     console.log('check', audioEl?.src);
+    //     if (audioEl?.src) {
+    //         src = audioEl.src;
+    //         const response = await fetch(src);
+    //         const res = await response.body.getReader().read();
+    //         console.log('blob', res);
+    //         return res;
+    //     }
+    // } 
+}
 
 const Component = () => {
     const navigate = useNavigate();
+    const dispatch = useDispatch();
     const { id } = useParams();
     const [examTest, setExamTest] = useState();
     const [exam, setExam] = useState();
@@ -117,7 +116,8 @@ const Component = () => {
                 setAnswers(_answers);
                 setExam(_exam);
                 setQuestions(_questions);
-                setCurrQIdx(_questions.findLastIndex((q) => _answers.find((ans) => ans.question === q._id)) + 1);
+                const _currQIdx = _questions.findLastIndex((q) => _answers.find((ans) => ans.question === q._id)) + 1;
+                setCurrQIdx(_currQIdx);
                 setExamTest(_examTest);
                 if (_examTest.status === 'new') {
                     setConfirm({
@@ -147,6 +147,18 @@ const Component = () => {
                     });
 
                 }
+                if (_examTest.status !== 'finished' && _currQIdx === _questions.length) {
+                    setConfirm({
+                        onFinish: () => setConfirm(undefined),
+                        description: 'All questions were done. Are you want to finish test!',
+                        disabledCancel: true,
+                        disabledBackdropClick: true,
+                        confirmAction: async () => {
+                            await axios.post('/exam-test/' + _examTest?._id + '/finish-testing');
+                            navigate('/tests')
+                        }
+                    });
+                }
             } catch (error) {
                 console.error(error)
                 alert('error')
@@ -166,7 +178,7 @@ const Component = () => {
                 confirmAction: () => navigate('/tests')
             });
         } else
-        setCurrQIdx(prev => prev + 1);
+            setCurrQIdx(prev => prev + 1);
     }, [currQIdx, questions.length, handleFinish, navigate]);
 
     const handlePause = useCallback(async () => {
@@ -182,65 +194,60 @@ const Component = () => {
         loading ? <Loading /> : examTest ?
             <Box id="testing" display="flex" flexDirection="column" height="100vh">
                 <Box display="none">
-                <audio id="audio" style={{ display: 'none' }} />
-                <ReactMediaRecorder
-                    video={false}
-                    onStop={(blobUrl, blobData) => {
-                        const url = URL.createObjectURL(blobData);
-                        let au = document.getElementById('audio');
-                    
-              
-                        au.controls = true;
-                        au.src = url;
-                        au.preload = "auto";
-                      
-                        au.load();
-                    }}
-                    render={({ startRecording, stopRecording }) => (
-                        <Box>
+                    <audio id="audio" style={{ display: 'none' }} />
+                    <ReactMediaRecorder
+                        video={false}
+                        onStop={(blobUrl, blobData) => {
+                            console.log('onStop');
+                            const url = URL.createObjectURL(blobData);
+                            let au = document.getElementById('audio');
+                            au.controls = true;
+                            au.src = url;
+                            au.preload = "auto";
+                            au.load();
+                            dispatch(audioAct.setAudioBlob(blobData));
+                        }}
+                        onStart={() => console.log('start record')}
+                        render={({ startRecording, stopRecording }) => (
+                            <Box>
                                 <button id="start-record" style={{ display: 'none' }} onClick={startRecording}></button>
                                 <button id="stop-record" style={{ display: 'none' }} onClick={stopRecording}></button>
-                        </Box>
-                    )}
-                />
+                            </Box>
+                        )}
+                    />
                 </Box>
                 <Header examTest={examTest} elapsedTime={showCount} currQIdx={currQIdx} totalQ={questions.length} />
                 {
-        examTest.status === 'testing' && questions[currQIdx] && (
-            <>
-                {/* {question.type === 'writing-essay' && <Essay question={question} reload={reload} />}
-                        {question.type === 'writing-summarize' && <Summaarize question={question} reload={reload} />}
-                        {question.type === 'speaking-read-aloud' && <ReadAloud question={question} reload={reload} />}
-                        {question.type === 'speaking-describe-image' && <DescribeImage question={question} reload={reload} />} */}
-                {questions[currQIdx].type === 'speaking-repeat-sentence' && <RepeatSentence testId={examTest._id} question={questions[currQIdx]} onPause={handlePause} onNextQ={handleNextQ} />}
-                {questions[currQIdx].type === 'speaking-answer-short-question' && <AnswerShortQuestion testId={examTest._id} question={questions[currQIdx]} onPause={handlePause} onNextQ={handleNextQ} />}
-                {questions[currQIdx].type === 'speaking-describe-image' && <DescribeImage testId={examTest._id} question={questions[currQIdx]} onPause={handlePause} onNextQ={handleNextQ} />}
-                {questions[currQIdx].type === 'speaking-re-tell-lecture' && <ReTellLecture testId={examTest._id} question={questions[currQIdx]} onPause={handlePause} onNextQ={handleNextQ} />}
-                {questions[currQIdx].type === 'listening-summarize-spoken-text' && <SummarizeSpokenText testId={examTest._id} question={questions[currQIdx]} onPause={handlePause} onNextQ={handleNextQ} />}
-                {questions[currQIdx].type === 'listening-write-from-dictation' && <WriteFromDictation testId={examTest._id} question={questions[currQIdx]} onPause={handlePause} onNextQ={handleNextQ} />}
-                {questions[currQIdx].type === 'listening-highlight-incorrect-words' && <HighlightIncorrectWords testId={examTest._id} question={questions[currQIdx]} onPause={handlePause} onNextQ={handleNextQ} />}
-                {questions[currQIdx].type === 'listening-fill-in-the-blanks' && <FillInTheBlanks testId={examTest._id} question={questions[currQIdx]} onPause={handlePause} onNextQ={handleNextQ} />}
-                {questions[currQIdx].type === 'reading-fill-in-the-blanks' && <ReadingFillInTheBlanks testId={examTest._id} question={questions[currQIdx]} onPause={handlePause} onNextQ={handleNextQ} />}
-                {questions[currQIdx].type === 'writing-essay' && <WriteEssay testId={examTest._id} question={questions[currQIdx]} onPause={handlePause} onNextQ={handleNextQ} />}
-                {questions[currQIdx].type === 'writing-summarize' && <SummarizeWrittenText testId={examTest._id} question={questions[currQIdx]} onPause={handlePause} onNextQ={handleNextQ} />}
-                {questions[currQIdx].type === 'reading-single-choice' && <SingleChoice testId={examTest._id} question={questions[currQIdx]} onPause={handlePause} onNextQ={handleNextQ} />}
-                {questions[currQIdx].type === 'reading-multiple-choice' && <MultipleChoice testId={examTest._id} question={questions[currQIdx]} onPause={handlePause} onNextQ={handleNextQ} />}
-                {questions[currQIdx].type === 'reading-re-order-paragraphs' && <ReOrderParagraphs testId={examTest._id} question={questions[currQIdx]} onPause={handlePause} onNextQ={handleNextQ} />}
-                {questions[currQIdx].type === 'reading-fill-in-the-blanks-drop' && <ReadingFillInTheBlanksDrop testId={examTest._id} question={questions[currQIdx]} onPause={handlePause} onNextQ={handleNextQ} />}
-                {/* {question.type === 'speaking-answer-short-question' && <AnswerShortQuestion question={question} reload={reload} />}
-                        {question.type === 'speaking-re-tell-lecture' && <ReTellLecture question={question} reload={reload} />}
-                        {question.type === 'listening-summarize-spoken-text' && <SummarizeSpokenText question={question} reload={reload} />}
-                        {question.type === 'listening-write-from-dictation' && <WriteFromDictation question={question} reload={reload} />}
-                        {question.type === 'listening-single-choice' && <ListeningSingleChoice question={question} reload={reload} />}
-                        {question.type === 'listening-multiple-choice' && <ListeningMultipleChoice question={question} reload={reload} />}
-                        {question.type === 'listening-highlight-correct-summary' && <HighlightCorrectSummary question={question} reload={reload} />}
-                        {question.type === 'listening-select-missing-word' && <SelectMissingWord question={question} reload={reload} />}
-                        {question.type === 'reading-single-choice' && <ReadingSingleChoice question={question} reload={reload} />}
-                        {question.type === 'reading-multiple-choice' && <ReadingMultipleChoice question={question} reload={reload} />} */}
-            </>
-        )
-    }
-    { confirm && <ConfirmBox {...confirm} /> }
+                    examTest.status === 'testing' && currQIdx >= 0 && questions[currQIdx] && (
+                        <>
+
+                            {questions[currQIdx].type === 'speaking-read-aloud' && <ReadAloud key={questions[currQIdx]._id} testId={examTest._id} question={questions[currQIdx]} onPause={handlePause} onNextQ={handleNextQ} />}
+                            {questions[currQIdx].type === 'speaking-repeat-sentence' && <RepeatSentence key={questions[currQIdx]._id} testId={examTest._id} question={questions[currQIdx]} onPause={handlePause} onNextQ={handleNextQ} />}
+                            {questions[currQIdx].type === 'speaking-answer-short-question' && <AnswerShortQuestion key={questions[currQIdx]._id} testId={examTest._id} question={questions[currQIdx]} onPause={handlePause} onNextQ={handleNextQ} />}
+                            {questions[currQIdx].type === 'speaking-describe-image' && <DescribeImage key={questions[currQIdx]._id} testId={examTest._id} question={questions[currQIdx]} onPause={handlePause} onNextQ={handleNextQ} />}
+                            {questions[currQIdx].type === 'speaking-re-tell-lecture' && <ReTellLecture key={questions[currQIdx]._id} testId={examTest._id} question={questions[currQIdx]} onPause={handlePause} onNextQ={handleNextQ} />}
+
+                            {questions[currQIdx].type === 'listening-summarize-spoken-text' && <SummarizeSpokenText key={questions[currQIdx]._id} testId={examTest._id} question={questions[currQIdx]} onPause={handlePause} onNextQ={handleNextQ} />}
+                            {questions[currQIdx].type === 'listening-write-from-dictation' && <WriteFromDictation key={questions[currQIdx]._id} testId={examTest._id} question={questions[currQIdx]} onPause={handlePause} onNextQ={handleNextQ} />}
+                            {questions[currQIdx].type === 'listening-highlight-incorrect-words' && <HighlightIncorrectWords key={questions[currQIdx]._id} testId={examTest._id} question={questions[currQIdx]} onPause={handlePause} onNextQ={handleNextQ} />}
+                            {questions[currQIdx].type === 'listening-fill-in-the-blanks' && <FillInTheBlanks key={questions[currQIdx]._id} testId={examTest._id} question={questions[currQIdx]} onPause={handlePause} onNextQ={handleNextQ} />}
+                            {questions[currQIdx].type === 'listening-multiple-choice' && <ListeningMultipleChoice key={questions[currQIdx]._id} testId={examTest._id} question={questions[currQIdx]} onPause={handlePause} onNextQ={handleNextQ} />}
+                            {questions[currQIdx].type === 'listening-single-choice' && <ListeningSingleChoice key={questions[currQIdx]._id} testId={examTest._id} question={questions[currQIdx]} onPause={handlePause} onNextQ={handleNextQ} />}
+                            {questions[currQIdx].type === 'listening-highlight-correct-summary' && <ListeningSingleChoice key={questions[currQIdx]._id} testId={examTest._id} question={questions[currQIdx]} onPause={handlePause} onNextQ={handleNextQ} />}
+                            {questions[currQIdx].type === 'listening-select-missing-word' && <ListeningSingleChoice key={questions[currQIdx]._id} testId={examTest._id} question={questions[currQIdx]} onPause={handlePause} onNextQ={handleNextQ} />}
+
+                            {questions[currQIdx].type === 'writing-essay' && <WriteEssay key={questions[currQIdx]._id} testId={examTest._id} question={questions[currQIdx]} onPause={handlePause} onNextQ={handleNextQ} />}
+                            {questions[currQIdx].type === 'writing-summarize' && <SummarizeWrittenText key={questions[currQIdx]._id} testId={examTest._id} question={questions[currQIdx]} onPause={handlePause} onNextQ={handleNextQ} />}
+
+                            {questions[currQIdx].type === 'reading-fill-in-the-blanks' && <ReadingFillInTheBlanks key={questions[currQIdx]._id} testId={examTest._id} question={questions[currQIdx]} onPause={handlePause} onNextQ={handleNextQ} />}
+                            {questions[currQIdx].type === 'reading-single-choice' && <SingleChoice key={questions[currQIdx]._id} testId={examTest._id} question={questions[currQIdx]} onPause={handlePause} onNextQ={handleNextQ} />}
+                            {questions[currQIdx].type === 'reading-multiple-choice' && <MultipleChoice key={questions[currQIdx]._id} testId={examTest._id} question={questions[currQIdx]} onPause={handlePause} onNextQ={handleNextQ} />}
+                            {questions[currQIdx].type === 'reading-re-order-paragraphs' && <ReOrderParagraphs key={questions[currQIdx]._id} testId={examTest._id} question={questions[currQIdx]} onPause={handlePause} onNextQ={handleNextQ} />}
+                            {questions[currQIdx].type === 'reading-fill-in-the-blanks-drop' && <ReadingFillInTheBlanksDrop key={questions[currQIdx]._id} testId={examTest._id} question={questions[currQIdx]} onPause={handlePause} onNextQ={handleNextQ} />}
+                        </>
+                    )
+                }
+                {confirm && <ConfirmBox {...confirm} />}
             </Box >
             : <></>
     );

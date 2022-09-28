@@ -115,10 +115,10 @@ export default function Component() {
                     <Button color="primary" variant="contained" onClick={() => navigate('/testing/' + et._id)}>Start</Button>
                   )}
                   {et.status === 'paused' && (
-                    <Button color="info" variant="contained">Continue</Button>
+                    <Button color="info" variant="contained" onClick={() => navigate('/testing/' + et._id)}>Continue</Button>
                   )}
                   {et.status === 'testing' && (
-                    <Button color="warning" variant="contained">Testing</Button>
+                    <Button color="warning" variant="contained" onClick={() => navigate('/testing/' + et._id)}>Continue</Button>
                   )}
                   {et.status === 'finished' && (
                     <Button color="success" variant="contained">Check Result</Button>

@@ -1,8 +1,10 @@
 import { combineReducers, configureStore, getDefaultMiddleware } from '@reduxjs/toolkit';
 import { reducer as authReducer } from './authSlice';
+import { reducer as audioReducer } from './audioSlice';
 
 const rootReducer = combineReducers({
-  auth: authReducer
+  auth: authReducer,
+  audio: audioReducer
 });
 
 export const store = configureStore({
