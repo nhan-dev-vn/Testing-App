@@ -59,9 +59,9 @@ export default function Component() {
 
   useEffect(() => {
     fetchExams();
-    fetchExamTests();
+    if (isAdmin) fetchExamTests();
     fetchMyExamTests();
-  }, [fetchExamTests, fetchExams, fetchMyExamTests]);
+  }, [fetchExamTests, fetchExams, fetchMyExamTests, isAdmin]);
 
   const handleStartNewTest = useCallback(async (examId) => {
     try {
