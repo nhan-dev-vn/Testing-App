@@ -84,7 +84,8 @@ module.exports = {
     fetchById: async (req, res) => {
         try {
             const { id } = req.params;
-            let examTest = (await ExamTest.findById(id).populate(populate))
+            let examTest = (await ExamTest.findById(id).populate(populate))?.toObject();
+            if (req.user.email !== 'admin@gmail.com' && !areSameIds(examTest.examinee, req.user._id)) throw 'Not permission'
             let score;
             if (examTest.status === 'testing') {
                 const now = new Date();

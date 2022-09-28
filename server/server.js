@@ -56,9 +56,9 @@ app.post('/api/exam-test/:id/start-testing', ctrlAuth.checkAuth, ctrlExamTest.st
 app.post('/api/exam-test/:id/pause-testing', ctrlAuth.checkAuth, ctrlExamTest.pauseTesting);
 app.post('/api/exam-test/:id/resume-testing', ctrlAuth.checkAuth, ctrlExamTest.resumeTesting);
 app.post('/api/exam-test/:id/finish-testing', ctrlAuth.checkAuth, ctrlExamTest.finishTesting);
-app.get('/api/exam-tests', ctrlAuth.checkAuth, ctrlAuth.checkAuthAdmin, ctrlExamTest.list);
-app.get('/api/exam-tests/:id', ctrlAuth.checkAuth, ctrlAuth.checkAuthAdmin, ctrlExamTest.fetchById);
-app.get('/api/exam-tests/exams/:examId', ctrlAuth.checkAuth, ctrlAuth.checkAuthAdmin, ctrlExamTest.fetchByExamId);
+app.get('/api/exam-tests', ctrlAuth.checkAuth, ctrlExamTest.list);
+app.get('/api/exam-tests/:id', ctrlAuth.checkAuth, ctrlExamTest.fetchById);
+app.get('/api/exam-tests/exams/:examId', ctrlAuth.checkAuth, ctrlExamTest.fetchByExamId);
 app.post('/api/exam-tests/new', ctrlAuth.checkAuth, ctrlExamTest.create)
 
 app.get('*', (req,res) =>{
