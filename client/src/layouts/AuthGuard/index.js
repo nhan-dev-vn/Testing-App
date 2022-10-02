@@ -3,8 +3,9 @@ import { useSelector } from 'react-redux';
 import { Navigate } from 'react-router-dom';
 import Loading from '../../pages/Loading';
 
-const Component = ({ children }) => {
-    const { loading, isLoggedIn } = useSelector((state) => state.auth);
+const Component = ({ isAdmin, children }) => {
+    const { loading, isLoggedIn, user } = useSelector((state) => state.auth);
+    if (isAdmin && user.email !== 'admin@gmail.com' && isLoggedIn) return <Navigate to="/fobidden" />;
 
     return (
         loading ? <Loading /> :

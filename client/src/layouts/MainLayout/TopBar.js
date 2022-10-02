@@ -1,4 +1,4 @@
-import * as React from 'react';
+import React, { useMemo } from 'react';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import Toolbar from '@mui/material/Toolbar';
@@ -24,6 +24,7 @@ const settings = ['Logout'];
 const ResponsiveAppBar = () => {
   const navigate = useNavigate();
   const { user } = useSelector((state) => state.auth);
+  const isAdmin = useMemo(() => user.email === 'admin@gmail.com', [user]);
   const [anchorElNav, setAnchorElNav] = React.useState(null);
   const [anchorElUser, setAnchorElUser] = React.useState(null);
   const [type, setType] = React.useState();
@@ -105,13 +106,18 @@ const ResponsiveAppBar = () => {
               }}
             >
               {testParts.map((page) => (
-                <MenuItem key={page} onClick={() => {setType(page.toLowerCase());handleCloseNavMenu();}}>
+                <MenuItem key={page} onClick={() => { setType(page.toLowerCase()); handleCloseNavMenu(); }}>
                   <Typography textAlign="center">{page}</Typography>
                 </MenuItem>
               ))}
               <MenuItem onClick={() => navigate('/tests')}>
                 <Typography textAlign="center">Tests</Typography>
               </MenuItem>
+              {isAdmin && (
+                <MenuItem onClick={() => { navigate('/users'); handleCloseNavMenu(); }}>
+                  <Typography textAlign="center">Users</Typography>
+                </MenuItem>
+              )}
             </Menu>
           </Box>
           <AdbIcon sx={{ display: { xs: 'flex', md: 'none' }, mr: 1 }} />
@@ -137,18 +143,26 @@ const ResponsiveAppBar = () => {
             {testParts.map((page) => (
               <Button
                 key={page}
-                onClick={() => {setType(page.toLowerCase());handleCloseNavMenu();}}
+                onClick={() => { setType(page.toLowerCase()); handleCloseNavMenu(); }}
                 sx={{ my: 2, color: 'white', display: 'block' }}
               >
                 {page}
               </Button>
             ))}
             <Button
-                onClick={() => navigate('/tests')}
+              onClick={() => navigate('/tests')}
+              sx={{ my: 2, color: 'white', display: 'block' }}
+            >
+              Tests
+            </Button>
+            {isAdmin && (
+              <Button
+                onClick={() => navigate('/users')}
                 sx={{ my: 2, color: 'white', display: 'block' }}
               >
-                Tests
+                Users
               </Button>
+            )}
           </Box>
 
           <Box sx={{ flexGrow: 0 }}>

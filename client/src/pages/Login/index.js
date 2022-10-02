@@ -41,7 +41,8 @@ const Component = () => {
 			navigate('/dashboard');
 		} catch (error) {
 			dispatch(authActions.loginFail())
-			alert("Login failed!")
+			if (error.response.data.error === 'Wait admin approve your account') alert (error.response.data.error);
+			else alert("Login failed!")
 		}
 	}, [dispatch, login, navigate]);
 	const handleSignUp = useCallback(async () => {

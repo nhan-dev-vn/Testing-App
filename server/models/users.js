@@ -14,6 +14,7 @@ var userSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  status: String // new/active/deactive
 }, { timestamps: true });
 
 

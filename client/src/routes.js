@@ -16,6 +16,8 @@ import Login from './pages/Login'
 import Home from './pages/Home';
 import Question from './pages/Question';
 import Tests from './pages/Tests';
+import Users from './pages/Users';
+import Fobidden from './pages/Fobidden';
 
 export const renderRoutes = (routes) => (
   <BrowserRouter>
@@ -31,7 +33,7 @@ export const renderRoutes = (routes) => (
             path={route.path}
             exact={route.exact}
             element={
-              <Guard>
+              <Guard isAdmin={route.isAdmin}>
                 <Layout>
                   {route.routes
                     ? renderRoutes(route.routes)
@@ -47,11 +49,11 @@ export const renderRoutes = (routes) => (
 );
 
 const routes = [
-  // {
-  //   exact: true,
-  //   path: '/404',
-  //   component: lazy(() => import('src/pages/NotFound'))
-  // },
+  {
+    exact: true,
+    path: '/fobidden',
+    component: Fobidden
+  },
   {
     exact: true,
     path: '/login',
@@ -87,6 +89,14 @@ const routes = [
     guard: AuthGuard,
     path: '/tests',
     component: Tests
+  },
+  {
+    exact: true,
+    layout: MainLayout,
+    guard: AuthGuard,
+    isAdmin: true,
+    path: '/users',
+    component: Users
   },
   {
     exact: true,

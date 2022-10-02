@@ -24,4 +24,32 @@ module.exports = {
         }
 
     },
+    changeStatus: async (req, res) => {
+        try {
+            const userId = req.params.userId;
+            const { status } = req.body;
+            const user = await User.findOneAndUpdate({ _id: userId }, {
+                $set: {
+                    status
+                }
+            }, { new: true });
+            res.status(200).send({ ...user, password: undefined });
+        } catch (error) {
+            console.log(JSON.stringify(error))
+            res.status(500).send({
+                error: JSON.stringify(error)
+            });
+        }
+    },
+    list: async (req, res) => {
+        try {
+            const users = await User.find({ email: { $ne: 'admin@gmail.com' } })
+            res.status(200).send(users.map((user) => ({  ...user.toObject(), password: undefined })));
+        } catch (error) {
+            console.log(JSON.stringify(error))
+            res.status(500).send({
+                error: JSON.stringify(error)
+            });
+        }
+    }
 };

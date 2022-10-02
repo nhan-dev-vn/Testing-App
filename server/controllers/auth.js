@@ -4,7 +4,7 @@ module.exports = {
     register: async (req, res) => {
         try {
             const { email, name, password } = req.body;
-            const user = new User({ email, password, name });
+            const user = new User({ email, password, name, status: 'new' });
             const result = await user.save();
             res.status(201).send(result);
         } catch (error) {
@@ -19,11 +19,12 @@ module.exports = {
         try {
             const { email, password } = req.body;
             const user = await User.findOne({ email, password });
+            if (user.status !== 'active') res.status(401).send({ error: 'Wait admin approve your account' })
             if (user) {
-                token = jwt.sign({ email, password }, process.env.JWT_SECRET, { expiresIn: '24h' });
+                token = jwt.sign({ email, password, status: user.status }, process.env.JWT_SECRET, { expiresIn: '24h' });
                 res.cookie('token', token);
                 req.user = user;
-                res.cookie('user', JSON.stringify({ _id: user._id, email, name: user.name }));
+                res.cookie('user', JSON.stringify({ _id: user._id, email, name: user.name, status: user.status }));
                 res.status(200).send({ _id: user._id, email, name: user.name });
             } else throw 'Login failed!'
         } catch (error) {
@@ -71,7 +72,8 @@ module.exports = {
                 cookie[key] = value;
             });
             const decoded = jwt.verify(cookie.token, process.env.JWT_SECRET);
-            const user = await User.findOne({ email: decoded.email });
+            const user = await User.findOne({ email: decoded.email, status: decoded.status });
+            if (user.status !== 'active') res.status(401).send({ error: 'Wait admin approve your account' })
             if (user) {
                 req.user = user;
                 res.cookie('user', JSON.stringify({ _id: user._id, email: user.email, name: user.name }));
